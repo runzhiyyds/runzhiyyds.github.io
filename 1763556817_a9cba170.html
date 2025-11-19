@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>特朗普派对小游戏</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #222;
+      color: #fff;
+      text-align: center;
+    }
+
+    #game {
+      margin: 50px auto;
+      width: 400px;
+      height: 400px;
+      background: #333;
+      border: 2px solid #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .money {
+      width: 40px;
+      height: 40px;
+      background: gold;
+      border-radius: 50%;
+      position: absolute;
+      top: -50px;
+      left: 0;
+    }
+
+    .player {
+      width: 60px;
+      height: 60px;
+      background: url('https://inews.gtimg.com/om_bt/ONg0vNhlhuco_tGKp97iikguh4N0UmiTs7fT88ZlvZTLQAA/641') no-repeat center;
+      background-size: cover;
+      position: absolute;
+      bottom: 10px;
+      left: 170px;
+    }
+
+    #score {
+      font-size: 20px;
+      margin-top: 20px;
+    }
+
+    #startBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>特朗普派对小游戏</h1>
+  <div id="game">
+    <div class="player" id="player"></div>
+  </div>
+  <div id="score">得分：0</div>
+  <button id="startBtn">开始游戏</button>
+
+  <script>
+    const game = document.getElementById("game");
+    const player = document.getElementById("player");
+    const scoreDisplay = document.getElementById("score");
+    const startBtn = document.getElementById("startBtn");
+    let score = 0;
+    let gameInterval;
+    let moneyInterval;
+    let keys = {};
+
+    function createMoney() {
+      const money = document.createElement("div");
+      money.className = "money";
+      money.style.left = Math.random() * (game.clientWidth - 40) + "px";
+      game.appendChild(money);
+
+      let fall = setInterval(() => {
+        const top = parseInt(money.style.top || "-50");
+        if (top > game.clientHeight) {
+          clearInterval(fall);
+          game.removeChild(money);
+        } else {
+          money.style.top = top + 5 + "px";
+
+          const playerRect = player.getBoundingClientRect();
+          const moneyRect = money.getBoundingClientRect();
+
+          if (
+            playerRect.left < moneyRect.right &&
+            playerRect.right > moneyRect.left &&
+            playerRect.top < moneyRect.bottom &&
+            playerRect.bottom > moneyRect.top
+          ) {
+            clearInterval(fall);
+            game.removeChild(money);
+            score++;
+            scoreDisplay.innerText = "得分：" + score;
+          }
+        }
+      }, 30);
+    }
+
+    function movePlayer() {
+      const left = parseInt(player.style.left || "170");
+      if (keys["ArrowLeft"] && left > 0) {
+        player.style.left = left - 5 + "px";
+      }
+      if (keys["ArrowRight"] && left + 60 < game.clientWidth) {
+        player.style.left = left + 5 + "px";
+      }
+    }
+
+    function startGame() {
+      score = 0;
+      scoreDisplay.innerText = "得分：0";
+      startBtn.disabled = true;
+
+      gameInterval = setInterval(movePlayer, 20);
+      moneyInterval = setInterval(createMoney, 1000);
+
+      setTimeout(() => {
+        clearInterval(gameInterval);
+        clearInterval(moneyInterval);
+        startBtn.disabled = false;
+        alert("游戏结束！你的得分是：" + score);
+      }, 30000); // 30秒结束
+    }
+
+    startBtn.addEventListener("click", startGame);
+
+    document.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+    });
+
+    document.addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+    });
+  </script>
+</body>
+</html>
+```
