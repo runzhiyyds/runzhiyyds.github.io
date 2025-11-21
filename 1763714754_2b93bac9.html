@@ -1,0 +1,1224 @@
+the complete HTML demo with all the provided code integrated:
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双城之夜：盖茨比的代价</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight-blue: #0A0F2C;
+      --gilded-orange: #D4A574;
+      --rust-red: #8B2635;
+      --neon-green: #00FF88;
+      --alert-red: #FF0040;
+      --text-primary: #FFFFFF;
+      --text-secondary: #B0B0B0;
+      --bg-dark: #050817;
+      --panel-bg: rgba(10, 15, 44, 0.9);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto Mono', monospace;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* 主菜单 */
+    #main-menu {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, var(--midnight-blue) 0%, var(--bg-dark) 100%);
+    }
+
+    #game-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 4rem;
+      color: var(--gilded-orange);
+      margin-bottom: 3rem;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+
+    .menu-button {
+      width: 300px;
+      padding: 15px 30px;
+      margin: 10px 0;
+      background: var(--panel-bg);
+      border: 2px solid var(--gilded-orange);
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .menu-button:hover {
+      background: var(--gilded-orange);
+      color: var(--bg-dark);
+      transform: scale(1.05);
+    }
+
+    .menu-button:active {
+      transform: scale(0.95);
+    }
+
+    /* 游戏主界面 */
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      flex-direction: column;
+    }
+
+    /* 顶部栏 */
+    #top-bar {
+      height: 80px;
+      background: var(--panel-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      border-bottom: 2px solid var(--gilded-orange);
+    }
+
+    #opinion-monitor {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .media-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--rust-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    #opinion-percentage {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--neon-green);
+    }
+
+    #date-time {
+      text-align: center;
+    }
+
+    #date-time .date {
+      font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+
+    #date-time .time {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    #budget-bracelet {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .bracelet-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--neon-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-dark);
+    }
+
+    /* 主操作区 */
+    #main-play-area {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+
+    .screen-divider {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--gilded-orange);
+      z-index: 10;
+    }
+
+    .screen {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #luxury-screen {
+      background: linear-gradient(180deg, var(--midnight-blue) 0%, var(--bg-dark) 100%);
+      border-right: 1px solid var(--gilded-orange);
+    }
+
+    #community-screen {
+      background: linear-gradient(180deg, var(--rust-red) 0%, var(--bg-dark) 100%);
+    }
+
+    .screen h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    #luxury-screen h2 {
+      color: var(--gilded-orange);
+    }
+
+    #community-screen h2 {
+      color: var(--neon-green);
+    }
+
+    /* NPC区域 */
+    .npc-area {
+      flex: 1;
+      background: var(--panel-bg);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .demand-card, .family-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .demand-card:hover, .family-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(5px);
+    }
+
+    .demand-card {
+      border-left-color: var(--gilded-orange);
+    }
+
+    .family-card {
+      border-left-color: var(--neon-green);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-cost {
+      color: var(--gilded-orange);
+      font-size: 1rem;
+    }
+
+    .card-effect {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* 仪表盘 */
+    .dashboard {
+      background: var(--panel-bg);
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .dashboard h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .gauge {
+      width: 100%;
+      height: 30px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+      position: relative;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      transition: width 0.5s ease;
+      border-radius: 15px;
+    }
+
+    .luxury-fill {
+      background: linear-gradient(90deg, var(--gilded-orange), #FFD700);
+    }
+
+    .hunger-fill {
+      background: linear-gradient(90deg, var(--neon-green), var(--rust-red));
+    }
+
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    /* 事件弹窗 */
+    #event-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .event-card {
+      background: var(--panel-bg);
+      border: 2px solid var(--gilded-orange);
+      border-radius: 10px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .event-title {
+      font-size: 1.5rem;
+      color: var(--gilded-orange);
+      margin-bottom: 1rem;
+    }
+
+    .event-description {
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .event-choices {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .choice-btn {
+      padding: 10px 20px;
+      background: var(--panel-bg);
+      border: 2px solid var(--neon-green);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .choice-btn:hover {
+      background: var(--neon-green);
+      color: var(--bg-dark);
+    }
+
+    .choice-btn.danger {
+      border-color: var(--alert-red);
+    }
+
+    .choice-btn.danger:hover {
+      background: var(--alert-red);
+    }
+
+    /* 结算界面 */
+    #settlement-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-dark);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .settlement-content {
+      text-align: center;
+      max-width: 600px;
+      padding: 2rem;
+    }
+
+    .settlement-title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .settlement-title.victory {
+      color: var(--neon-green);
+    }
+
+    .settlement-title.defeat {
+      color: var(--alert-red);
+    }
+
+    .settlement-stats {
+      margin: 2rem 0;
+      text-align: left;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: var(--panel-bg);
+      border-radius: 5px;
+    }
+
+    /* 设置界面 */
+    #settings-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-dark);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .settings-content {
+      background: var(--panel-bg);
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .setting-item {
+      margin-bottom: 1.5rem;
+    }
+
+    .setting-item label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .setting-item input[type="range"] {
+      width: 100%;
+    }
+
+    .setting-item select {
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 1px solid var(--gilded-orange);
+      border-radius: 5px;
+    }
+
+    /* 背包界面 */
+    #inventory-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-dark);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .inventory-content {
+      background: var(--panel-bg);
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      margin-top: 1rem;
+    }
+
+    .inventory-slot {
+      width: 60px;
+      height: 60px;
+      background: var(--bg-dark);
+      border: 2px solid var(--text-secondary);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .inventory-slot:hover {
+      border-color: var(--gilded-orange);
+    }
+
+    .inventory-slot.occupied {
+      border-color: var(--neon-green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    /* 技能树界面 */
+    #skill-tree-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-dark);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .skill-tree-content {
+      background: var(--panel-bg);
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 800px;
+      height: 80vh;
+      overflow-y: auto;
+    }
+
+    .skill-branch {
+      margin-bottom: 2rem;
+    }
+
+    .skill-branch h3 {
+      color: var(--gilded-orange);
+      margin-bottom: 1rem;
+    }
+
+    .skill-nodes {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .skill-node {
+      width: 120px;
+      padding: 1rem;
+      background: var(--bg-dark);
+      border: 2px solid var(--text-secondary);
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .skill-node.unlocked {
+      border-color: var(--neon-green);
+      background: rgba(0, 255, 136, 0.2);
+    }
+
+    .skill-node:hover:not(.unlocked) {
+      border-color: var(--gilded-orange);
+    }
+
+    /* 底部控制栏 */
+    #bottom-controls {
+      height: 60px;
+      background: var(--panel-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      border-top: 2px solid var(--gilded-orange);
+    }
+
+    .control-btn {
+      padding: 10px 20px;
+      background: var(--panel-bg);
+      border: 2px solid var(--text-secondary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .control-btn:hover {
+      border-color: var(--gilded-orange);
+    }
+
+    .control-btn.active {
+      border-color: var(--neon-green);
+      background: rgba(0, 255, 136, 0.2);
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .screen {
+        padding: 1rem;
+      }
+      
+      #game-title {
+        font-size: 2.5rem;
+      }
+      
+      .menu-button {
+        width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 主菜单 -->
+  <div id="main-menu">
+    <h1 id="game-title">双城之夜：盖茨比的代价</h1>
+    <button class="menu-button" onclick="startGame()">开始游戏</button>
+    <button class="menu-button" onclick="openSettings()">设置</button>
+    <button class="menu-button" onclick="showHelp()">帮助</button>
+  </div>
+
+  <!-- 游戏主容器 -->
+  <div id="game-container">
+    <!-- 顶部栏 -->
+    <div id="top-bar">
+      <div id="opinion-monitor">
+        <div class="media-avatar">📺</div>
+        <div id="opinion-percentage">50%</div>
+      </div>
+      <div id="date-time">
+        <div class="date">Day <span id="current-day">1</span> - Nov 1, 2025</div>
+        <div class="time">06:00</div>
+      </div>
+      <div id="budget-bracelet">
+        <div class="bracelet-icon">💰</div>
+        <span id="budget-amount">$1,000,000</span>
+      </div>
+    </div>
+
+    <!-- 主操作区 -->
+    <div id="main-play-area">
+      <div class="screen-divider"></div>
+      
+      <!-- 左屏：派对世界 -->
+      <div id="luxury-screen" class="screen">
+        <h2>🍾 海湖庄园派对</h2>
+        <div class="npc-area">
+          <div id="luxury-demands">
+            <div class="demand-card" data-cost="50000" data-luxury="5" data-opinion="-2">
+              <div class="card-title">基础香槟塔</div>
+              <div class="card-cost">成本: $50,000</div>
+              <div class="card-effect">奢华指数 +5, 舆论 -2%</div>
+            </div>
+            <div class="demand-card" data-cost="100000" data-luxury="10" data-opinion="-5">
+              <div class="card-title">空运鱼子酱</div>
+              <div class="card-cost">成本: $100,000</div>
+              <div class="card-effect">奢华指数 +10, 舆论 -5%</div>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard">
+          <h3>奢华指数</h3>
+          <div class="gauge">
+            <div class="gauge-fill luxury-fill" id="luxury-gauge" style="width: 0%"></div>
+            <div class="gauge-text" id="luxury-percentage">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右屏：社区世界 -->
+      <div id="community-screen" class="screen">
+        <h2>🏘️ 铁锈社区援助</h2>
+        <div class="npc-area">
+          <div id="community-families">
+            <div class="family-card" data-cost="30" data-hunger="-0.1" data-opinion="1">
+              <div class="card-title">玛丽亚家庭</div>
+              <div class="card-cost">成本: $30</div>
+              <div class="card-effect">饥饿指数 -0.1%, 舆论 +1%</div>
+            </div>
+            <div class="family-card" data-cost="30" data-hunger="-0.1" data-opinion="1">
+              <div class="card-title">汤姆家庭</div>
+              <div class="card-cost">成本: $30</div>
+              <div class="card-effect">饥饿指数 -0.1%, 舆论 +1%</div>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard">
+          <h3>饥饿指数</h3>
+          <div class="gauge">
+            <div class="gauge-fill hunger-fill" id="hunger-gauge" style="width: 100%"></div>
+            <div class="gauge-text" id="hunger-percentage">100%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部控制栏 -->
+    <div id="bottom-controls">
+      <button class="control-btn" id="speed-1x" onclick="setSpeed(1)">1x</button>
+      <button class="control-btn active" id="speed-2x" onclick="setSpeed(2)">2x</button>
+      <button class="control-btn" id="speed-4x" onclick="setSpeed(4)">4x</button>
+      <button class="control-btn" onclick="togglePause()">⏸️</button>
+      <button class="control-btn" onclick="openInventory()">🎒 背包</button>
+      <button class="control-btn" onclick="openSkillTree()">🌟 技能</button>
+    </div>
+  </div>
+
+  <!-- 事件弹窗 -->
+  <div id="event-modal">
+    <div class="event-card">
+      <h3 class="event-title" id="event-title">道德困境</h3>
+      <p class="event-description" id="event-description">事件描述</p>
+      <div class="event-choices" id="event-choices">
+        <button class="choice-btn" onclick="handleEventChoice('approve')">批准</button>
+        <button class="choice-btn danger" onclick="handleEventChoice('refuse')">拒绝</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算界面 -->
+  <div id="settlement-modal">
+    <div class="settlement-content">
+      <h2 class="settlement-title" id="settlement-title">Day Complete</h2>
+      <div class="settlement-stats" id="settlement-stats">
+        <!-- 动态生成统计 -->
+      </div>
+      <button class="menu-button" onclick="nextDay()">下一天</button>
+    </div>
+  </div>
+
+  <!-- 设置界面 -->
+  <div id="settings-modal">
+    <div class="settings-content">
+      <h2 style="color: var(--gilded-orange); margin-bottom: 2rem;">设置</h2>
+      <div class="setting-item">
+        <label>主音量</label>
+        <input type="range" min="0" max="100" value="80" onchange="updateVolume('master', this.value)">
+      </div>
+      <div class="setting-item">
+        <label>音效音量</label>
+        <input type="range" min="0" max="100" value="70" onchange="updateVolume('sfx', this.value)">
+      </div>
+      <div class="setting-item">
+        <label>难度</label>
+        <select onchange="changeDifficulty(this.value)">
+          <option value="easy">简单</option>
+          <option value="normal" selected>普通</option>
+          <option value="hard">困难</option>
+        </select>
+      </div>
+      <button class="menu-button" onclick="closeSettings()">返回</button>
+    </div>
+  </div>
+
+  <!-- 背包界面 -->
+  <div id="inventory-modal">
+    <div class="inventory-content">
+      <h2 style="color: var(--gilded-orange); margin-bottom: 1rem;">应急储备</h2>
+      <div class="inventory-grid" id="inventory-grid">
+        <!-- 动态生成格子 -->
+      </div>
+      <button class="menu-button" onclick="closeInventory()" style="margin-top: 1rem;">关闭</button>
+    </div>
+  </div>
+
+  <!-- 技能树界面 -->
+  <div id="skill-tree-modal">
+    <div class="skill-tree-content">
+      <h2 style="color: var(--gilded-orange); margin-bottom: 2rem;">技能树</h2>
+      <div class="skill-branch">
+        <h3>效率系</h3>
+        <div class="skill-nodes">
+          <div class="skill-node unlocked">快速审批</div>
+          <div class="skill-node">批量处理</div>
+          <div class="skill-node">自动化</div>
+        </div>
+      </div>
+      <div class="skill-branch">
+        <h3>道德系</h3>
+        <div class="skill-nodes">
+          <div class="skill-node">悲情叙事</div>
+          <div class="skill-node">透明账本</div>
+          <div class="skill-node">社区领袖</div>
+        </div>
+      </div>
+      <div class="skill-branch">
+        <h3>权谋系</h3>
+        <div class="skill-nodes">
+          <div class="skill-node">媒体操控</div>
+          <div class="skill-node">暗箱操作</div>
+          <div class="skill-node">大亨同盟</div>
+        </div>
+      </div>
+      <button class="menu-button" onclick="closeSkillTree()" style="margin-top: 1rem;">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    // 游戏状态管理
+    class GameState {
+      constructor() {
+        this.day = 1;
+        this.budget = 1000000;
+        this.luxuryIndex = 0;
+        this.hungerIndex = 100;
+        this.opinionIndex = 50;
+        this.isPaused = false;
+        this.gameSpeed = 2;
+        this.difficulty = 'normal';
+        this.difficultyMultipliers = {
+          easy: { budget: 1.2, hunger: 0.5, opinion: 1.3 },
+          normal: { budget: 1.0, hunger: 1.0, opinion: 1.0 },
+          hard: { budget: 0.8, hunger: 1.5, opinion: 0.7 }
+        };
+        
+        // 事件系统
+        this.currentEvent = null;
+        this.events = [
+          {
+            id: 'maria_medicine',
+            title: '玛丽亚的困境',
+            description: '玛丽亚的孩子发烧了，需要从派对预算挪用$20,000买药。是否批准？',
+            choices: {
+              approve: { cost: 200000, opinion: 5, hunger: -0.5, luxury: 0 },
+              refuse: { cost: 0, opinion: -10, hunger: 0, luxury: 0 }
+            }
+          },
+          {
+            id: 'rubio_deal',
+            title: '鲁比奥的提议',
+            description: '鲁比奥提议花$300,000雇佣水军，将饥饿问题归咎于对手。是否接受？',
+            choices: {
+              approve: { cost: 300000, opinion: 15, hunger: 0, luxury: 0 },
+              refuse: { cost: 0, opinion: -5, hunger: 0, luxury: 0 }
+            }
+          },
+          {
+            id: 'donald_demand',
+            title: '大亨的不满',
+            description: '大亨要求追加$150,000用于私人飞机，否则将曝光你的"无能"。',
+            choices: {
+              approve: { cost: 150000, opinion: -5, hunger: 0, luxury: 10 },
+              refuse: { cost: 0, opinion: -15, hunger: 0, luxury: -5 }
+            }
+          }
+        ];
+        
+        // 道具系统
+        this.inventory = [
+          { id: 'emergency_food', name: '紧急食品包', quantity: 3 },
+          { id: 'pr_letter', name: '公关稿', quantity: 1 }
+        ];
+        
+        this.init();
+      }
+      
+      init() {
+        this.updateUI();
+        this.generateInventoryGrid();
+      }
+      
+      // 处理需求卡片点击
+      handleDemandClick(element) {
+        if (this.isPaused) return;
+        
+        const cost = parseInt(element.dataset.cost);
+        const luxuryGain = parseInt(element.dataset.luxury);
+        const opinionImpact = parseInt(element.dataset.opinion);
+        
+        if (this.budget >= cost) {
+          this.budget -= cost;
+          this.luxuryIndex = Math.min(100, this.luxuryIndex + luxuryGain);
+          this.opinionIndex = Math.max(0, Math.min(100, this.opinionIndex + opinionImpact));
+          
+          // 更新饥饿指数（换算比1:3.5）
+          const hungerIncrease = (cost / 35000) * 10;
+          this.hungerIndex = Math.min(100, this.hungerIndex + hungerIncrease);
+          
+          this.updateUI();
+          this.showFeedback(`${element.querySelector('.card-title').textContent} 已执行`, 'success');
+        } else {
+          this.showFeedback('预算不足！', 'error');
+        }
+      }
+      
+      // 处理家庭救助点击
+      handleFamilyClick(element) {
+        if (this.isPaused) return;
+        
+        const cost = parseInt(element.dataset.cost);
+        const hungerRelief = parseFloat(element.dataset.hunger);
+        const opinionImpact = parseInt(element.dataset.opinion);
+        
+        if (this.budget >= cost) {
+          this.budget -= cost;
+          this.hungerIndex = Math.max(0, this.hungerIndex + hungerRelief);
+          this.opinionIndex = Math.max(0, Math.min(100, this.opinionIndex + opinionImpact));
+          
+          this.updateUI();
+          this.showFeedback('已救助一个家庭', 'success');
+        } else {
+          this.showFeedback('预算不足！', 'error');
+        }
+      }
+      
+      // 触发随机事件
+      triggerRandomEvent() {
+        const event = this.events[Math.floor(Math.random() * this.events.length)];
+        this.currentEvent = event;
+        
+        document.getElementById('event-title').textContent = event.title;
+        document.getElementById('event-description').textContent = event.description;
+        document.getElementById('event-modal').style.display = 'flex';
+        this.isPaused = true;
+      }
+      
+      // 处理事件选择
+      handleEventChoice(choice) {
+        if (!this.currentEvent) return;
+        
+        const effect = this.currentEvent.choices[choice];
+        
+        if (this.budget >= effect.cost) {
+          this.budget -= effect.cost;
+          this.luxuryIndex = Math.min(100, this.luxuryIndex + (effect.luxury || 0));
+          this.hungerIndex = Math.max(0, Math.min(100, this.hungerIndex + (effect.hunger || 0)));
+          this.opinionIndex = Math.max(0, Math.min(100, this.opinionIndex + effect.opinion));
+          
+          this.updateUI();
+          this.closeModal('event-modal');
+          this.isPaused = false;
+          this.showFeedback(`事件处理完成`, 'success');
+        } else {
+          this.showFeedback('预算不足无法执行此选择！', 'error');
+        }
+      }
+      
+      // 每日结算
+      dailySettlement() {
+        const multiplier = this.difficultyMultipliers[this.difficulty];
+        
+        // 计算稳定性
+        const stability = 100 - Math.abs(this.luxuryIndex - this.hungerIndex);
+        
+        // 计算明日预算
+        const nextBudget = 1000000 * (this.opinionIndex / 50) * multiplier.budget;
+        
+        // 显示结算
+        document.getElementById('settlement-title').textContent = `Day ${this.day} 结束`;
+        document.getElementById('settlement-title').className = 'settlement-title';
+        
+        const statsHtml = `
+          <div class="stat-item">
+            <span>奢华指数</span>
+            <span style="color: var(--gilded-orange);">${this.luxuryIndex.toFixed(1)}%</span>
+          </div>
+          <div class="stat-item">
+            <span>饥饿指数</span>
+            <span style="color: var(--neon-green);">${this.hungerIndex.toFixed(1)}%</span>
+          </div>
+          <div class="stat-item">
+            <span>舆论指数</span>
+            <span style="color: var(--neon-green);">${this.opinionIndex.toFixed(1)}%</span>
+          </div>
+          <div class="stat-item">
+            <span>社会稳定性</span>
+            <span style="color: ${stability > 50 ? 'var(--neon-green)' : 'var(--alert-red)'};">${stability.toFixed(1)}%</span>
+          </div>
+          <div class="stat-item">
+            <span>明日预算</span>
+            <span style="color: var(--gilded-orange);">$${nextBudget.toLocaleString()}</span>
+          </div>
+        `;
+        
+        document.getElementById('settlement-stats').innerHTML = statsHtml;
+        document.getElementById('settlement-modal').style.display = 'flex';
+        
+        this.isPaused = true;
+      }
+      
+      // 下一天
+      nextDay() {
+        this.day++;
+        const multiplier = this.difficultyMultipliers[this.difficulty];
+        this.budget = 1000000 * (this.opinionIndex / 50) * multiplier.budget;
+        
+        // 随机事件触发
+        if (Math.random() < 0.3) {
+          setTimeout(() => this.triggerRandomEvent(), 1000);
+        }
+        
+        this.updateUI();
+        this.closeModal('settlement-modal');
+        this.isPaused = false;
+        
+        // 检查游戏结束
+        if (this.day > 3) {
+          this.endGame();
+        }
+      }
+      
+      // 游戏结束
+      endGame() {
+        const stability = 100 - Math.abs(this.luxuryIndex - this.hungerIndex);
+        const victory = stability >= 30;
+        
+        document.getElementById('settlement-title').textContent = victory ? '胜利！' : '失败！';
+        document.getElementById('settlement-title').className = victory ? 'settlement-title victory' : 'settlement-title defeat';
+        
+        const statsHtml = `
+          <div class="stat-item">
+            <span>最终稳定性</span>
+            <span style="color: ${victory ? 'var(--neon-green)' : 'var(--alert-red)'};">${stability.toFixed(1)}%</span>
+          </div>
+          <div class="stat-item">
+            <span>总天数</span>
+            <span>${this.day} 天</span>
+          </div>
+          <div class="stat-item">
+            <span>最终舆论</span>
+            <span>${this.opinionIndex.toFixed(1)}%</span>
+          </div>
+        `;
+        
+        document.getElementById('settlement-stats').innerHTML = statsHtml;
+        document.getElementById('settlement-modal').style.display = 'flex';
+        
+        // 替换按钮
+        document.querySelector('#settlement-modal .menu-button').textContent = '返回主菜单';
+        document.querySelector('#settlement-modal .menu-button').onclick = () => location.reload();
+      }
+      
+      // 更新UI
+      updateUI() {
+        document.getElementById('current-day').textContent = this.day;
+        document.getElementById('budget-amount').textContent = `$${Math.floor(this.budget).toLocaleString()}`;
+        document.getElementById('opinion-percentage').textContent = `${this.opinionIndex.toFixed(0)}%`;
+        document.getElementById('luxury-percentage').textContent = `${this.luxuryIndex.toFixed(0)}%`;
+        document.getElementById('hunger-percentage').textContent = `${this.hungerIndex.toFixed(0)}%`;
+        
+        document.getElementById('luxury-gauge').style.width = `${this.luxuryIndex}%`;
+        document.getElementById('hunger-gauge').style.width = `${this.hungerIndex}%`;
+        
+        // 更新舆论颜色
+        const opinionEl = document.getElementById('opinion-percentage');
+        if (this.opinionIndex > 70) {
+          opinionEl.style.color = 'var(--neon-green)';
+        } else if (this.opinionIndex > 30) {
+          opinionEl.style.color = 'var(--gilded-orange)';
+        } else {
+          opinionEl.style.color = 'var(--alert-red)';
+        }
+      }
+      
+      // 生成背包网格
+      generateInventoryGrid() {
+        const grid = document.getElementById('inventory-grid');
+        grid.innerHTML = '';
+        
+        for (let i = 0; i < 32; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'inventory-slot';
+          
+          if (i < this.inventory.length) {
+            slot.classList.add('occupied');
+            slot.textContent = this.inventory[i].name.substring(0, 2);
+            slot.title = `${this.inventory[i].name} x${this.inventory[i].quantity}`;
+          }
+          
+          grid.appendChild(slot);
+        }
+      }
+      
+      // 显示反馈
+      showFeedback(message, type) {
+        const feedback = document.createElement('div');
+        feedback.textContent = message;
+        feedback.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          padding: 1rem 2rem;
+          background: ${type === 'success' ? 'var(--neon-green)' : 'var(--alert-red)'};
+          color: var(--bg-dark);
+          font-weight: bold;
+          border-radius: 5px;
+          z-index: 2000;
+          animation: fadeInOut 2s ease;
+        `;
+        
+        document.body.appendChild(feedback);
+        setTimeout(() => feedback.remove(), 2000);
+      }
+      
+      // 关闭弹窗
+      closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+    }
+
+    // 全局游戏实例
+    let gameState;
+
+    // 启动游戏
+    function startGame() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('game-container').style.display = 'flex';
+      
+      gameState = new GameState();
+      
+      // 绑定事件
+      bindEvents();
+      
+      // 每日结算定时器（简化版，每30秒=1天）
+      setInterval(() => {
+        if (!gameState.isPaused && gameState.day <= 3) {
+          gameState.dailySettlement();
+        }
+      }, 30000);
+    }
+
+    // 绑定交互事件
+    function bindEvents() {
+      // 需求卡片点击
+      document.querySelectorAll('.demand-card').forEach(card => {
+        card.addEventListener('click', () => {
+          gameState.handleDemandClick(card);
+        });
+      });
+      
+      // 家庭卡片点击
+      document.querySelectorAll('.family-card').forEach(card => {
+        card.addEventListener('click', () => {
+          gameState.handleFamilyClick(card);
+        });
+      });
+    }
+
+    // 全局函数
+    function handleEventChoice(choice) {
+      gameState.handleEventChoice(choice);
+    }
+
+    function nextDay() {
+      gameState.nextDay();
+    }
+
+    function setSpeed(speed) {
+      gameState.gameSpeed = speed;
+      document.querySelectorAll('.control-btn[id^="speed-"]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`speed-${speed}x`).classList.add('active');
+    }
+
+    function togglePause() {
+      gameState.isPaused = !gameState.isPaused;
+      const btn = document.querySelector('.control-btn[onclick="togglePause()"]');
+      btn.textContent = gameState.isPaused ? '▶️' : '⏸️';
+    }
+
+    function openSettings() {
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    function openInventory() {
+      gameState.generateInventoryGrid();
+      document.getElementById('inventory-modal').style.display = 'flex';
+    }
+
+    function closeInventory() {
+      document.getElementById('inventory-modal').style.display = 'none';
+    }
+
+    function openSkillTree() {
+      document.getElementById('skill-tree-modal').style.display = 'flex';
+    }
+
+    function closeSkillTree() {
+      document.getElementById('skill-tree-modal').style.display = 'none';
+    }
+
+    function showHelp() {
+      alert(`游戏帮助：\n\n1. 每日预算是有限的，合理分配到左右两个世界\n2. 左屏是奢华派对，满足大亨需求但会恶化舆论\n3. 右屏是社区援助，救助家庭但消耗资金\n4. 舆论指数影响明日预算\n5. 饥饿指数达到100%或舆论降到0%游戏失败\n6. 每日会有随机事件，需要做出道德抉择\n7. 坚持3天即可看到结局`);
+    }
+
+    function updateVolume(type, value) {
+      console.log(`设置${type}音量为${value}`);
+    }
+
+    function changeDifficulty(difficulty) {
+      if (gameState) {
+        gameState.difficulty = difficulty;
+      }
+    }
+
+    // CSS动画
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
+```
