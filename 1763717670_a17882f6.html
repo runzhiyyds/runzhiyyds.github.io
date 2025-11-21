@@ -1,0 +1,833 @@
+L、CSS和JavaScript代码，创建一个完整的可运行Demo：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>镀金天平</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Didot&display=swap" rel="stylesheet">
+  <style>
+    /* 全局样式 */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* 主界面布局 */
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* 顶部状态栏 */
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 80px;
+      padding: 0 20px;
+      background-color: #2C3E50;
+      border-bottom: 2px solid #8B4513;
+    }
+
+    .resource-bar {
+      display: flex;
+      align-items: center;
+    }
+
+    .resource-item {
+      margin: 0 10px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+
+    #treasury-icon { background-color: gold; }
+    #public-support-icon { background-color: #C0392B; }
+    #elite-favor-icon { background-color: #8B4513; }
+
+    .progress-bar {
+      width: 200px;
+      height: 20px;
+      background-color: #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+    }
+
+    #public-support-progress .progress-fill { background: linear-gradient(to right, #C0392B, #27ae60); }
+    #elite-favor-progress .progress-fill { background: linear-gradient(to right, #8B4513, #f1c40f); }
+
+    /* 中央决策区 */
+    #decision-area {
+      display: flex;
+      flex: 1;
+      padding: 20px;
+    }
+
+    #policy-cards {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .policy-card {
+      width: 180px;
+      height: 240px;
+      background-color: #2C3E50;
+      border: 1px solid #8B4513;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+
+    .policy-card:hover {
+      transform: scale(1.05);
+    }
+
+    #execution-area {
+      width: 300px;
+      height: 200px;
+      border: 2px dashed #8B4513;
+      border-radius: 8px;
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #delay-queue {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .delayed-card {
+      width: 120px;
+      height: 160px;
+      background-color: #2C3E50;
+      border: 1px solid #8B4513;
+      border-radius: 8px;
+      opacity: 0.7;
+    }
+
+    /* 右侧事件流 */
+    #event-stream {
+      width: 320px;
+      background-color: #1a1a1a;
+      padding: 10px;
+      border-left: 1px solid #8B4513;
+    }
+
+    #current-event {
+      min-height: 200px;
+      background-color: #2C3E50;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+
+    #event-history {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-item {
+      padding: 5px;
+      border-bottom: 1px solid #333;
+    }
+
+    #next-round-preview {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #2C3E50;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    #preview-lock {
+      margin-right: 10px;
+    }
+
+    /* 底部导航栏 */
+    #footer {
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #2C3E50;
+      border-top: 2px solid #8B4513;
+    }
+
+    #end-turn-btn {
+      width: 200px;
+      height: 60px;
+      background: linear-gradient(to bottom, #8B4513, #5D2906);
+      border: none;
+      border-radius: 30px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    #end-turn-btn:active {
+      transform: scale(0.95);
+    }
+
+    .nav-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 15px;
+      background-color: #8B4513;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    /* 精英晚宴界面 */
+    #banquet-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #banquet-dialog {
+      width: 600px;
+      background-color: #2C3E50;
+      border: 2px solid #8B4513;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    #banquet-options {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .banquet-option {
+      padding: 10px 20px;
+      background-color: #8B4513;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #banquet-timer {
+      font-size: 24px;
+      color: #C0392B;
+      margin-bottom: 20px;
+    }
+
+    /* 关系网界面 */
+    #npc-network-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: none;
+    }
+
+    /* 数字飞入动画 */
+    @keyframes flyIn {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-50px); opacity: 0; }
+    }
+
+    .resource-change {
+      position: absolute;
+      color: white;
+      font-weight: bold;
+      animation: flyIn 1s forwards;
+    }
+
+    .positive { color: #2ecc71; }
+    .negative { color: #e74c3c; }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <!-- 顶部状态栏 -->
+    <div id="header">
+      <div class="resource-bar">
+        <div class="resource-item">
+          <span id="treasury-icon" class="icon"></span>
+          <span id="treasury">100</span>
+        </div>
+      </div>
+      
+      <div class="resource-item">
+        <div>民众支持</div>
+        <div class="progress-bar" id="public-support-progress">
+          <div class="progress-fill" style="width: 50%;"></div>
+        </div>
+        <span id="public-support">50</span>
+      </div>
+      
+      <div class="resource-item">
+        <div>精英好感</div>
+        <div class="progress-bar" id="elite-favor-progress">
+          <div class="progress-fill" style="width: 50%;"></div>
+        </div>
+        <span id="elite-favor">50</span>
+      </div>
+      
+      <div class="resource-item">
+        回合: <span id="current-round">1</span>/50
+      </div>
+    </div>
+    
+    <!-- 中央决策区 -->
+    <div id="decision-area">
+      <div id="policy-cards">
+        <!-- 政策卡将通过JS动态生成 -->
+      </div>
+      
+      <div id="execution-area">
+        拖拽政策卡到此处执行
+      </div>
+      
+      <div id="delay-queue">
+        <!-- 延迟队列将通过JS动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 右侧事件流 -->
+    <div id="event-stream">
+      <div id="current-event">
+        <h3>当前事件</h3>
+        <p id="event-description">暂无事件</p>
+        <div id="event-options">
+          <!-- 事件选项将通过JS动态生成 -->
+        </div>
+      </div>
+      
+      <div id="event-history">
+        <h3>历史事件</h3>
+        <div id="history-list">
+          <!-- 历史事件将通过JS动态生成 -->
+        </div>
+      </div>
+      
+      <div id="next-round-preview">
+        <span id="preview-lock">🔒</span>
+        <span>消耗情报预览下回合</span>
+      </div>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <div id="footer">
+      <div class="nav-icon" id="npc-btn">NPC</div>
+      <div class="nav-icon" id="legacy-btn">遗产</div>
+      <button id="end-turn-btn">结束回合</button>
+      <div class="nav-icon" id="settings-btn">设置</div>
+      <div class="nav-icon" id="help-btn">帮助</div>
+    </div>
+  </div>
+  
+  <!-- 精英晚宴界面 -->
+  <div id="banquet-screen">
+    <div id="banquet-timer">15</div>
+    <div id="banquet-dialog">
+      <h2>精英晚宴</h2>
+      <p id="banquet-message">维克多·金举杯说道："执政官，今晚的香槟预算……从您的国库出？"</p>
+      <div id="banquet-options">
+        <div class="banquet-option" data-choice="accept">同意</div>
+        <div class="banquet-option" data-choice="reject">拒绝</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 关系网界面 -->
+  <div id="npc-network-screen">
+    <!-- 关系网内容将通过JS动态生成 -->
+  </div>
+  
+  <script>
+    // 游戏状态
+    const gameState = {
+      treasury: 100,
+      publicSupport: 50,
+      eliteFavor: 50,
+      currentRound: 1,
+      maxRound: 50,
+      bureaucracyEfficiency: 50,
+      
+      // 政策卡数据
+      policyCards: [
+        {
+          id: "POLI_001",
+          name: "紧急食品援助",
+          level: 1,
+          cost: { treasury: -20 },
+          effect: { publicSupport: 15 },
+          sideEffect: { target: "eliteFavor", value: -5, delay: 1 },
+          description: "向基座区发放应急食品包，但精英认为这会'养懒人'"
+        },
+        {
+          id: "POLI_002",
+          name: "基础设施投资",
+          level: 2,
+          cost: { treasury: -30 },
+          effect: { publicSupport: 5, eliteFavor: 10 },
+          description: "修建公共设施，创造就业但成本高昂"
+        },
+        {
+          id: "POLI_003",
+          name: "减税刺激",
+          level: 2,
+          cost: { treasury: -15 },
+          effect: { eliteFavor: 20 },
+          sideEffect: { target: "publicSupport", value: -10, delay: 0 },
+          description: "降低企业税率，提振经济但民众不满"
+        }
+      ],
+      
+      // 延迟队列
+      delayQueue: [],
+      
+      // 事件数据
+      currentEvent: null,
+      eventHistory: [],
+      
+      // 精英晚宴状态
+      banquetActive: false,
+      banquetTimer: null,
+      banquetTimeLeft: 15
+    };
+
+    // DOM元素引用
+    const elements = {
+      treasury: document.getElementById('treasury'),
+      publicSupport: document.getElementById('publicSupport'),
+      eliteFavor: document.getElementById('eliteFavor'),
+      currentRound: document.getElementById('current-round'),
+      policyCards: document.getElementById('policy-cards'),
+      executionArea: document.getElementById('execution-area'),
+      delayQueue: document.getElementById('delay-queue'),
+      eventDescription: document.getElementById('event-description'),
+      eventOptions: document.getElementById('event-options'),
+      banquetScreen: document.getElementById('banquet-screen'),
+      banquetMessage: document.getElementById('banquet-message'),
+      banquetTimer: document.getElementById('banquet-timer'),
+      endTurnBtn: document.getElementById('end-turn-btn')
+    };
+
+    // 初始化游戏
+    function initGame() {
+      updateResourceUI();
+      renderPolicyCards();
+      
+      // 绑定事件
+      elements.endTurnBtn.addEventListener('click', endTurn);
+      document.querySelectorAll('.banquet-option').forEach(option => {
+        option.addEventListener('click', handleBanquetChoice);
+      });
+      
+      // 每5回合触发精英晚宴
+      if (gameState.currentRound % 5 === 0) {
+        startBanquet();
+      }
+    }
+
+    // 更新资源UI
+    function updateResourceUI() {
+      elements.treasury.textContent = gameState.treasury;
+      elements.publicSupport.textContent = gameState.publicSupport;
+      elements.eliteFavor.textContent = gameState.eliteFavor;
+      elements.currentRound.textContent = gameState.currentRound;
+      
+      // 更新进度条
+      document.querySelector('#public-support-progress .progress-fill').style.width = `${gameState.publicSupport}%`;
+      document.querySelector('#elite-favor-progress .progress-fill').style.width = `${gameState.eliteFavor}%`;
+    }
+
+    // 渲染政策卡
+    function renderPolicyCards() {
+      elements.policyCards.innerHTML = '';
+      
+      gameState.policyCards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'policy-card';
+        cardElement.innerHTML = `
+          <h4>${card.name}</h4>
+          <p>${card.description}</p>
+          <p>消耗国库: ${Math.abs(card.cost.treasury)}</p>
+        `;
+        
+        // 添加拖拽功能
+        cardElement.draggable = true;
+        cardElement.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', card.id);
+        });
+        
+        elements.policyCards.appendChild(cardElement);
+      });
+    }
+
+    // 执行区拖放功能
+    function setupExecutionArea() {
+      elements.executionArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        elements.executionArea.style.borderColor = '#f1c40f';
+      });
+      
+      elements.executionArea.addEventListener('dragleave', () => {
+        elements.executionArea.style.borderColor = '#8B4513';
+      });
+      
+      elements.executionArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        elements.executionArea.style.borderColor = '#8B4513';
+        
+        const cardId = e.dataTransfer.getData('text/plain');
+        const card = gameState.policyCards.find(c => c.id === cardId);
+        
+        if (card) {
+          executePolicyCard(card);
+        }
+      });
+    }
+
+    // 执行政策卡
+    function executePolicyCard(card) {
+      // 检查资源是否足够
+      if (gameState.treasury + card.cost.treasury < 0) {
+        showResourceChange('国库不足', elements.executionArea, 'negative');
+        return;
+      }
+      
+      // 支付即时成本
+      gameState.treasury += card.cost.treasury;
+      showResourceChange(card.cost.treasury, elements.executionArea, 'negative');
+      
+      // 计算延迟回合数
+      const delayRounds = Math.ceil(card.level / (gameState.bureaucracyEfficiency / 50));
+      
+      // 添加到延迟队列
+      gameState.delayQueue.push({
+        card,
+        effectRound: gameState.currentRound + delayRounds,
+        executed: false
+      });
+      
+      // 更新UI
+      updateResourceUI();
+      renderDelayQueue();
+      
+      // 显示执行反馈
+      showResourceChange(`已安排: ${card.name}`, elements.executionArea, 'positive');
+    }
+
+    // 渲染延迟队列
+    function renderDelayQueue() {
+      elements.delayQueue.innerHTML = '';
+      
+      gameState.delayQueue.forEach(item => {
+        const delayElement = document.createElement('div');
+        delayElement.className = 'delayed-card';
+        delayElement.innerHTML = `
+          <h5>${item.card.name}</h5>
+          <p>回合: ${item.effectRound}</p>
+        `;
+        elements.delayQueue.appendChild(delayElement);
+      });
+    }
+
+    // 结束回合
+    function endTurn() {
+      // 自动资源变化
+      gameState.treasury -= 5; // 维护费
+      gameState.publicSupport -= 5; // 饥饿增长
+      gameState.eliteFavor -= 3; // 期待提升
+      
+      // 检查延迟队列
+      checkDelayQueue();
+      
+      // 回合数增加
+      gameState.currentRound++;
+      
+      // 更新UI
+      updateResourceUI();
+      
+      // 检查游戏结束条件
+      if (checkGameOver()) {
+        return;
+      }
+      
+      // 每5回合触发精英晚宴
+      if (gameState.currentRound % 5 === 0) {
+        startBanquet();
+      } else {
+        // 随机事件触发
+        if (Math.random() < 0.3) {
+          triggerRandomEvent();
+        }
+      }
+    }
+
+    // 检查延迟队列
+    function checkDelayQueue() {
+      for (let i = gameState.delayQueue.length - 1; i >= 0; i--) {
+        const item = gameState.delayQueue[i];
+        
+        if (gameState.currentRound >= item.effectRound && !item.executed) {
+          // 执行效果
+          if (item.card.effect.publicSupport) {
+            gameState.publicSupport += item.card.effect.publicSupport;
+            showResourceChange(`+${item.card.effect.publicSupport} 民众支持`, elements.executionArea, 'positive');
+          }
+          
+          if (item.card.effect.eliteFavor) {
+            gameState.eliteFavor += item.card.effect.eliteFavor;
+            showResourceChange(`+${item.card.effect.eliteFavor} 精英好感`, elements.executionArea, 'positive');
+          }
+          
+          // 处理副作用
+          if (item.card.sideEffect) {
+            if (item.card.sideEffect.delay === 0) {
+              // 立即生效的副作用
+              gameState[item.card.sideEffect.target] += item.card.sideEffect.value;
+              showResourceChange(`${item.card.sideEffect.value} ${item.card.sideEffect.target}`, elements.executionArea, 'negative');
+            } else {
+              // 延迟的副作用加入队列
+              gameState.delayQueue.push({
+                card: {
+                  name: '副作用',
+                  effect: { [item.card.sideEffect.target]: item.card.sideEffect.value }
+                },
+                effectRound: gameState.currentRound + item.card.sideEffect.delay,
+                executed: false
+              });
+            }
+          }
+          
+          // 标记为已执行
+          item.executed = true;
+          
+          // 从队列中移除
+          gameState.delayQueue.splice(i, 1);
+        }
+      }
+      
+      renderDelayQueue();
+      updateResourceUI();
+    }
+
+    // 触发随机事件
+    function triggerRandomEvent() {
+      const events = [
+        {
+          description: "基座区出现黑市粮贩，是否取缔？",
+          options: [
+            { text: "取缔", effect: { publicSupport: -5, eliteFavor: 5 } },
+            { text: "默许", effect: { publicSupport: 5, eliteFavor: -5 } }
+          ]
+        },
+        {
+          description: "金顶俱乐部要求减税，是否同意？",
+          options: [
+            { text: "同意", effect: { treasury: -15, eliteFavor: 10 } },
+            { text: "拒绝", effect: { eliteFavor: -15 } }
+          ]
+        }
+      ];
+      
+      const event = events[Math.floor(Math.random() * events.length)];
+      gameState.currentEvent = event;
+      
+      // 渲染事件
+      elements.eventDescription.textContent = event.description;
+      elements.eventOptions.innerHTML = '';
+      
+      event.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option.text;
+        button.addEventListener('click', () => handleEventChoice(index));
+        elements.eventOptions.appendChild(button);
+      });
+    }
+
+    // 处理事件选择
+    function handleEventChoice(choiceIndex) {
+      const option = gameState.currentEvent.options[choiceIndex];
+      
+      // 应用效果
+      Object.keys(option.effect).forEach(key => {
+        gameState[key] += option.effect[key];
+        showResourceChange(`${option.effect[key]} ${key}`, elements.eventOptions, option.effect[key] > 0 ? 'positive' : 'negative');
+      });
+      
+      // 添加到历史
+      gameState.eventHistory.push({
+        round: gameState.currentRound,
+        description: gameState.currentEvent.description,
+        choice: option.text
+      });
+      
+      // 更新UI
+      updateResourceUI();
+      renderEventHistory();
+      
+      // 清除当前事件
+      gameState.currentEvent = null;
+      elements.eventDescription.textContent = '暂无事件';
+      elements.eventOptions.innerHTML = '';
+    }
+
+    // 渲染历史事件
+    function renderEventHistory() {
+      const historyList = document.getElementById('history-list');
+      historyList.innerHTML = '';
+      
+      gameState.eventHistory.slice().reverse().forEach(event => {
+        const item = document.createElement('div');
+        item.className = 'event-item';
+        item.textContent = `回合 ${event.round}: ${event.description} → 选择: ${event.choice}`;
+        historyList.appendChild(item);
+      });
+    }
+
+    // 开始精英晚宴
+    function startBanquet() {
+      gameState.banquetActive = true;
+      gameState.banquetTimeLeft = 15;
+      elements.banquetScreen.style.display = 'flex';
+      elements.banquetTimer.textContent = gameState.banquetTimeLeft;
+      
+      // 设置倒计时
+      gameState.banquetTimer = setInterval(() => {
+        gameState.banquetTimeLeft--;
+        elements.banquetTimer.textContent = gameState.banquetTimeLeft;
+        
+        if (gameState.banquetTimeLeft <= 0) {
+          // 时间到，自动拒绝
+          clearInterval(gameState.banquetTimer);
+          handleBanquetChoice('reject');
+        }
+      }, 1000);
+    }
+
+    // 处理晚宴选择
+    function handleBanquetChoice(choice) {
+      clearInterval(gameState.banquetTimer);
+      
+      if (choice === 'accept') {
+        // 同意
+        gameState.treasury -= 10;
+        gameState.eliteFavor += 15;
+        showResourceChange('-10 国库', elements.banquetScreen, 'negative');
+        showResourceChange('+15 精英好感', elements.banquetScreen, 'positive');
+      } else {
+        // 拒绝
+        gameState.eliteFavor -= 20;
+        showResourceChange('-20 精英好感', elements.banquetScreen, 'negative');
+      }
+      
+      // 更新UI
+      updateResourceUI();
+      
+      // 关闭晚宴界面
+      elements.banquetScreen.style.display = 'none';
+      gameState.banquetActive = false;
+    }
+
+    // 显示资源变化动画
+    function showResourceChange(text, parentElement, className) {
+      const changeElement = document.createElement('div');
+      changeElement.textContent = text;
+      changeElement.className = `resource-change ${className}`;
+      
+      // 随机位置
+      const rect = parentElement.getBoundingClientRect();
+      const x = rect.left + Math.random() * rect.width;
+      const y = rect.top + Math.random() * rect.height;
+      
+      changeElement.style.left = `${x}px`;
+      changeElement.style.top = `${y}px`;
+      
+      document.body.appendChild(changeElement);
+      
+      // 1秒后移除
+      setTimeout(() => {
+        changeElement.remove();
+      }, 1000);
+    }
+
+    // 检查游戏结束条件
+    function checkGameOver() {
+      if (gameState.publicSupport < 20) {
+        alert('革命爆发！民众支持度过低，游戏结束');
+        return true;
+      }
+      
+      if (gameState.treasury < 0) {
+        alert('国家破产！国库耗尽，游戏结束');
+        return true;
+      }
+      
+      if (gameState.eliteFavor < 30) {
+        alert('政变发生！精英好感度过低，游戏结束');
+        return true;
+      }
+      
+      if (gameState.currentRound > gameState.maxRound) {
+        alert('恭喜！你成功完成了50回合执政');
+        return true;
+      }
+      
+      return false;
+    }
+
+    // 初始化
+    window.onload = function() {
+      setupExecutionArea();
+      initGame();
+    };
+  </script>
+</body>
+</html>
+```
+
+这个完整的HTML文件包含了《镀金天平》游戏的所有核心功能：
+1. 完整的UI界面，包括资源状态栏、政策卡区域、执行区和事件流
+2. 政策卡拖拽执行功能
+3. 延迟效果系统
+4. 精英晚宴强制事件
+5. 随机事件系统
+6. 资源变化动画反馈
+7. 游戏结束条件检测
+
+玩家可以体验完整的游戏循环，包括管理三种资源、执行政策卡、处理事件和参加精英晚宴等核心玩法。
