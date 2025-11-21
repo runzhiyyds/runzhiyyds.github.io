@@ -1,0 +1,732 @@
+the complete HTML demo code:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>饥饿天平</title>
+  <style>
+    /* 全局样式 */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e6e6e6;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* 顶部状态栏 */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border-bottom: 1px solid #ffd700;
+    }
+
+    .currency {
+      display: flex;
+      gap: 20px;
+    }
+
+    .currency-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    .food-icon {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF3B30"><path d="M18 6h-2V4h2v2zm-2 4V8h2v2h-2zm2 4v-2h-2v2h2z"/><path d="M8 4h8v2H8V4zm6 6V8h-4v2h4zm-4 4v-2h4v2h-4zm4 4v-2h-4v2h4z"/></svg>');
+    }
+
+    .money-icon {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FFD700"><circle cx="12" cy="12" r="8" stroke="%23FFD700" stroke-width="2" fill="none"/><path d="M12 8v8M8 12h8" stroke="%23FFD700" stroke-width="2"/></svg>');
+    }
+
+    /* 主内容区 - 裂屏设计 */
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .left-panel, .right-panel {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .left-panel {
+      background: #222;
+      border-right: 2px dashed #ff3b30;
+    }
+
+    .right-panel {
+      background: #111;
+    }
+
+    /* 饥饿值倒计时 */
+    .hunger-timer {
+      background: rgba(255, 59, 48, 0.2);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #ff3b30;
+    }
+
+    .timer-display {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #ff3b30;
+      text-shadow: 0 0 5px rgba(255, 59, 48, 0.7);
+    }
+
+    /* 食品包区域 */
+    .food-packs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .food-pack {
+      width: 80px;
+      height: 80px;
+      background: rgba(76, 175, 80, 0.3);
+      border: 2px solid #4CAF50;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+
+    .food-pack:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #4CAF50;
+    }
+
+    /* 州地图容器 */
+    .states-map {
+      flex: 1;
+      position: relative;
+      background: #333;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .state {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .state:hover {
+      filter: brightness(1.2);
+    }
+
+    /* 派对区域 */
+    .champagne-tower {
+      height: 200px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      position: relative;
+      border: 1px solid #ffd700;
+    }
+
+    .tower-level {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(to top, rgba(255,215,0,0.3), transparent);
+      transition: height 0.5s ease;
+    }
+
+    /* 操作按钮 */
+    .actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 30px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #ff3b30, #ff7733);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(to right, #ffd700, #ffaa00);
+      color: #222;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    /* 底部导航 */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border-top: 1px solid #444;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 5px;
+      background-size: contain;
+    }
+
+    /* 对话框 */
+    .dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      z-index: 100;
+      display: none;
+    }
+
+    .dialog-content {
+      text-align: center;
+    }
+
+    .dialog-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    /* 裂屏动画 */
+    @keyframes crack {
+      0% { opacity: 0; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1.1); }
+    }
+
+    .crack-effect {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,0 L50,100 M0,50 L100,50" stroke="%23ff3b30" stroke-width="2" stroke-dasharray="5,5"/></svg>');
+      background-size: 200% 200%;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1000;
+    }
+
+    .crack-animation {
+      animation: crack 0.8s forwards;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+      
+      .left-panel {
+        border-right: none;
+        border-bottom: 2px dashed #ff3b30;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+      <div class="currency">
+        <div class="currency-item">
+          <div class="icon food-icon"></div>
+          <span id="food-count">3</span>
+        </div>
+        <div class="currency-item">
+          <div class="icon money-icon"></div>
+          <span id="money-count">0</span>
+        </div>
+      </div>
+      <div class="day-counter">Day <span id="day">1</span></div>
+    </div>
+    
+    <!-- 主内容区 - 裂屏设计 -->
+    <div class="main-content">
+      <!-- 左：饥饿区域 -->
+      <div class="left-panel">
+        <div class="hunger-timer">
+          <div class="timer-label">加州饥饿倒计时</div>
+          <div class="timer-display" id="california-timer">08:12:33</div>
+        </div>
+        
+        <div class="food-packs">
+          <div class="food-pack" draggable="true" data-value="10">食品包</div>
+          <div class="food-pack" draggable="true" data-value="10">食品包</div>
+          <div class="food-pack" draggable="true" data-value="10">食品包</div>
+        </div>
+        
+        <div class="states-map" id="states-map">
+          <!-- 州地图通过JS动态生成 -->
+        </div>
+      </div>
+      
+      <!-- 右：派对区域 -->
+      <div class="right-panel">
+        <div class="champagne-tower">
+          <div class="tower-level" id="tower-level" style="height: 30%;"></div>
+        </div>
+        
+        <div class="actions">
+          <button class="btn btn-primary" id="distribute-btn">分配食品包</button>
+          <button class="btn btn-secondary" id="pour-champagne">倒香槟</button>
+        </div>
+        
+        <div class="party-info">
+          <h3>金先生的派对</h3>
+          <p>影响力: <span id="prestige">30</span>/100</p>
+          <p>当前任务: 倒满香槟塔</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+      <div class="nav-item" id="nav-map">
+        <div class="nav-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z\"/></svg>');"></div>
+        <span>地图</span>
+      </div>
+      <div class="nav-item" id="nav-briefcase">
+        <div class="nav-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 0h-4V4h4v2z\"/></svg>');"></div>
+        <span>公文包</span>
+      </div>
+      <div class="nav-item" id="nav-events">
+        <div class="nav-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z\"/></svg>');"></div>
+        <span>事件簿</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 对话框 -->
+  <div class="dialog" id="dialog">
+    <div class="dialog-content">
+      <h2 id="dialog-title">道德困境</h2>
+      <p id="dialog-message">金先生要求挪用儿童午餐基金建造香槟塔，是否同意？</p>
+      <div class="dialog-buttons">
+        <button class="btn btn-primary" id="dialog-yes">同意</button>
+        <button class="btn btn-secondary" id="dialog-no">拒绝</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 裂屏效果 -->
+  <div class="crack-effect" id="crack-effect"></div>
+  
+  <script>
+    // 游戏状态
+    const gameState = {
+      day: 1,
+      foodPacks: 3,
+      money: 0,
+      prestige: 30,
+      hungerTimers: {
+        california: 8 * 3600 + 12 * 60 + 33, // 8小时12分33秒
+        ohio: 5 * 3600 + 45 * 60 + 12,
+        texas: 12 * 3600 + 30 * 60 + 0
+      },
+      states: [
+        { id: 'california', name: '加州', hunger: 78, top: '15%', left: '10%', width: '15%', height: '20%' },
+        { id: 'ohio', name: '俄亥俄', hunger: 65, top: '40%', left: '35%', width: '12%', height: '15%' },
+        { id: 'texas', name: '德州', hunger: 45, top: '50%', left: '20%', width: '20%', height: '25%' }
+      ],
+      activeState: null
+    };
+
+    // DOM元素
+    const elements = {
+      foodCount: document.getElementById('food-count'),
+      moneyCount: document.getElementById('money-count'),
+      dayDisplay: document.getElementById('day'),
+      californiaTimer: document.getElementById('california-timer'),
+      statesMap: document.getElementById('states-map'),
+      towerLevel: document.getElementById('tower-level'),
+      prestigeDisplay: document.getElementById('prestige'),
+      distributeBtn: document.getElementById('distribute-btn'),
+      pourChampagneBtn: document.getElementById('pour-champagne'),
+      dialog: document.getElementById('dialog'),
+      dialogTitle: document.getElementById('dialog-title'),
+      dialogMessage: document.getElementById('dialog-message'),
+      dialogYes: document.getElementById('dialog-yes'),
+      dialogNo: document.getElementById('dialog-no'),
+      crackEffect: document.getElementById('crack-effect')
+    };
+
+    // 初始化游戏
+    function initGame() {
+      updateUI();
+      renderStates();
+      startHungerTimers();
+      
+      // 事件监听
+      elements.distributeBtn.addEventListener('click', distributeFood);
+      elements.pourChampagneBtn.addEventListener('click', pourChampagne);
+      elements.dialogYes.addEventListener('click', handleDialogYes);
+      elements.dialogNo.addEventListener('click', handleDialogNo);
+      
+      // 拖放功能
+      setupDragAndDrop();
+      
+      // 新手引导
+      setTimeout(showTutorial, 1000);
+    }
+
+    // 更新UI
+    function updateUI() {
+      elements.foodCount.textContent = gameState.foodPacks;
+      elements.moneyCount.textContent = gameState.money;
+      elements.dayDisplay.textContent = gameState.day;
+      elements.prestigeDisplay.textContent = gameState.prestige;
+      
+      // 更新香槟塔高度
+      const towerHeight = Math.min(100, Math.floor(gameState.prestige / 100 * 100));
+      elements.towerLevel.style.height = `${towerHeight}%`;
+    }
+
+    // 渲染州地图
+    function renderStates() {
+      elements.statesMap.innerHTML = '';
+      
+      gameState.states.forEach(state => {
+        const stateEl = document.createElement('div');
+        stateEl.className = 'state';
+        stateEl.id = state.id;
+        stateEl.style.top = state.top;
+        stateEl.style.left = state.left;
+        stateEl.style.width = state.width;
+        stateEl.style.height = state.height;
+        
+        // 根据饥饿值设置颜色
+        const red = Math.floor(255 * (state.hunger / 100));
+        const green = Math.floor(255 * (1 - state.hunger / 100));
+        stateEl.style.backgroundColor = `rgba(${red}, ${green}, 0, 0.7)`;
+        
+        // 州名和饥饿值
+        stateEl.innerHTML = `<div style="text-align:center;padding-top:10px;">${state.name}</div>
+                           <div style="font-size:0.8em;">${state.hunger}%</div>`;
+        
+        stateEl.addEventListener('click', () => {
+          gameState.activeState = state.id;
+          highlightState(state.id);
+        });
+        
+        elements.statesMap.appendChild(stateEl);
+      });
+    }
+
+    // 高亮选中的州
+    function highlightState(stateId) {
+      document.querySelectorAll('.state').forEach(state => {
+        state.style.borderWidth = '1px';
+        state.style.boxShadow = 'none';
+      });
+      
+      const activeState = document.getElementById(stateId);
+      if (activeState) {
+        activeState.style.borderWidth = '3px';
+        activeState.style.boxShadow = '0 0 10px #ffcc00';
+      }
+    }
+
+    // 饥饿倒计时
+    function startHungerTimers() {
+      setInterval(() => {
+        // 减少所有州的倒计时
+        for (const state in gameState.hungerTimers) {
+          if (gameState.hungerTimers[state] > 0) {
+            gameState.hungerTimers[state] -= 1;
+          } else {
+            // 饥饿值归零时触发事件
+            triggerHungerEvent(state);
+          }
+        }
+        
+        // 更新UI
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    // 更新倒计时显示
+    function updateTimerDisplay() {
+      const californiaTime = gameState.hungerTimers.california;
+      const hours = Math.floor(californiaTime / 3600);
+      const minutes = Math.floor((californiaTime % 3600) / 60);
+      const seconds = californiaTime % 60;
+      
+      elements.californiaTimer.textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // 分发食品包
+    function distributeFood() {
+      if (gameState.foodPacks > 0 && gameState.activeState) {
+        gameState.foodPacks -= 1;
+        
+        // 找到选中的州并减少饥饿值
+        const state = gameState.states.find(s => s.id === gameState.activeState);
+        if (state) {
+          state.hunger = Math.max(0, state.hunger - 15);
+          
+          // 增加该州的倒计时
+          gameState.hungerTimers[state.id] += 3600; // 增加1小时
+          
+          // 更新UI
+          updateUI();
+          renderStates();
+          highlightState(state.id);
+          
+          // 显示效果
+          showEffect(state.id, '+1h', '#4CAF50');
+        }
+      } else if (!gameState.activeState) {
+        alert('请先选择一个州！');
+      } else {
+        alert('没有足够的食品包！');
+      }
+    }
+
+    // 倒香槟
+    function pourChampagne() {
+      // 增加影响力
+      gameState.prestige = Math.min(100, gameState.prestige + 5);
+      
+      // 增加金钱
+      gameState.money += 50;
+      
+      // 有10%几率触发道德困境
+      if (Math.random() < 0.1) {
+        showDialog(
+          "道德困境", 
+          "金先生要求挪用儿童午餐基金建造香槟塔，是否同意？",
+          "同意：获得200金钱，但所有州饥饿值+10%",
+          "拒绝：失去50影响力"
+        );
+      }
+      
+      // 更新UI
+      updateUI();
+      
+      // 显示效果
+      showEffect('tower-level', '+5 影响力', '#FFD700');
+    }
+
+    // 显示对话框
+    function showDialog(title, message, yesText, noText) {
+      elements.dialogTitle.textContent = title;
+      elements.dialogMessage.textContent = message;
+      elements.dialogYes.textContent = yesText;
+      elements.dialogNo.textContent = noText;
+      elements.dialog.style.display = 'block';
+    }
+
+    // 处理对话框确认
+    function handleDialogYes() {
+      elements.dialog.style.display = 'none';
+      
+      // 同意挪用资金
+      gameState.money += 200;
+      
+      // 所有州饥饿值增加
+      gameState.states.forEach(state => {
+        state.hunger = Math.min(100, state.hunger + 10);
+      });
+      
+      updateUI();
+      renderStates();
+      
+      // 显示裂屏效果
+      showCrackEffect();
+    }
+
+    // 处理对话框拒绝
+    function handleDialogNo() {
+      elements.dialog.style.display = 'none';
+      
+      // 拒绝要求，失去影响力
+      gameState.prestige = Math.max(0, gameState.prestige - 50);
+      
+      updateUI();
+    }
+
+    // 显示裂屏效果
+    function showCrackEffect() {
+      elements.crackEffect.classList.add('crack-animation');
+      setTimeout(() => {
+        elements.crackEffect.classList.remove('crack-animation');
+      }, 800);
+    }
+
+    // 设置拖放功能
+    function setupDragAndDrop() {
+      const foodPacks = document.querySelectorAll('.food-pack');
+      
+      foodPacks.forEach(pack => {
+        pack.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', pack.dataset.value);
+        });
+      });
+      
+      const states = document.querySelectorAll('.state');
+      states.forEach(state => {
+        state.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          state.style.borderColor = '#4CAF50';
+        });
+        
+        state.addEventListener('dragleave', () => {
+          state.style.borderColor = 'rgba(255,255,255,0.2)';
+        });
+        
+        state.addEventListener('drop', (e) => {
+          e.preventDefault();
+          state.style.borderColor = 'rgba(255,255,255,0.2)';
+          
+          if (gameState.foodPacks > 0) {
+            gameState.foodPacks -= 1;
+            
+            const stateId = state.id;
+            const hungerReduction = parseInt(e.dataTransfer.getData('text/plain'));
+            
+            const stateObj = gameState.states.find(s => s.id === stateId);
+            if (stateObj) {
+              stateObj.hunger = Math.max(0, stateObj.hunger - hungerReduction);
+              gameState.hungerTimers[stateId] += 3600; // 增加1小时
+              
+              updateUI();
+              renderStates();
+              highlightState(stateId);
+              
+              showEffect(stateId, `-${hungerReduction}%`, '#4CAF50');
+            }
+          }
+        });
+      });
+    }
+
+    // 显示效果文本
+    function showEffect(elementId, text, color) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const effect = document.createElement('div');
+      effect.textContent = text;
+      effect.style.position = 'absolute';
+      effect.style.color = color;
+      effect.style.fontWeight = 'bold';
+      effect.style.textShadow = `0 0 5px ${color}`;
+      effect.style.animation = 'floatUp 1s forwards';
+      
+      // 添加到元素
+      element.appendChild(effect);
+      
+      // 创建动画
+      const keyframes = `
+        @keyframes floatUp {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-30px); }
+        }
+      `;
+      
+      const styleSheet = document.createElement('style');
+      styleSheet.textContent = keyframes;
+      document.head.appendChild(styleSheet);
+      
+      // 清理
+      setTimeout(() => {
+        effect.remove();
+        styleSheet.remove();
+      }, 1000);
+    }
+
+    // 新手引导
+    function showTutorial() {
+      setTimeout(() => {
+        alert('欢迎来到《饥饿天平》！\n\n左侧：管理食品包分配延缓饥饿危机\n右侧：为权贵举办派对获取政治资源\n\n你的每个选择都将撕裂这个社会...');
+      }, 500);
+    }
+
+    // 触发饥饿事件
+    function triggerHungerEvent(stateId) {
+      const state = gameState.states.find(s => s.id === stateId);
+      if (state) {
+        showDialog(
+          "饥饿暴动！",
+          `${state.name}的食品储备已耗尽！民众开始暴动。\n\n请立即处理：`, 
+          "派遣防暴警察（消耗200金钱）",
+          "放任不管（失去30影响力）"
+        );
+        
+        // 重置该州倒计时
+        gameState.hungerTimers[stateId] = 8 * 3600;
+      }
+    }
+
+    // 初始化游戏
+    window.onload = initGame;
+  </script>
+</body>
+</html>
+```
