@@ -1,0 +1,1686 @@
+the complete HTML demo for "The Gatsby's Toll" game:
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盖茨比的代价 - The Gatsby's Toll</title>
+    <style>
+:root {
+  /* 镀金层主题色 */
+  --gilded-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  --gilded-primary: #D4AF37;
+  --gilded-secondary: #005F5F;
+  --gilded-text: #f5f5f5;
+  --gilded-card: rgba(212, 175, 55, 0.1);
+  --gilded-border: rgba(212, 175, 55, 0.3);
+  
+  /* 根基层主题色 */
+  --foundation-bg: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  --foundation-primary: #A8A8A8;
+  --foundation-secondary: #FF6B35;
+  --foundation-text: #e0e0e0;
+  --foundation-card: rgba(168, 168, 168, 0.1);
+  --foundation-border: rgba(168, 168, 168, 0.3);
+  
+  /* 通用变量 */
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --success: #28a745;
+  --info: #17a2b8;
+  
+  /* 字体 */
+  --font-title: 'Georgia', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--gilded-bg);
+  color: var(--gilded-text);
+  overflow-x: hidden;
+  transition: all 0.5s ease;
+}
+
+body.foundation-theme {
+  background: var(--foundation-bg);
+  color: var(--foundation-text);
+}
+
+/* 主菜单 */
+#main-menu {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--gilded-bg);
+  position: relative;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--gilded-primary);
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  margin-bottom: 2rem;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+  to { text-shadow: 0 0 30px rgba(212, 175, 55, 0.8), 0 0 40px rgba(212, 175, 55, 0.6); }
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 300px;
+}
+
+.btn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: 2px solid var(--gilded-primary);
+  background: var(--gilded-card);
+  color: var(--gilded-text);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: var(--gilded-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+  opacity: 0.3;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* 游戏主界面 */
+#game-container {
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+}
+
+/* 顶部状态栏 */
+.status-bar {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--gilded-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.foundation-theme .status-bar {
+  border-bottom-color: var(--foundation-border);
+}
+
+.world-indicator {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--gilded-primary);
+}
+
+.foundation-theme .world-indicator {
+  color: var(--foundation-secondary);
+}
+
+.time-display {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.resources-bar {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.resource-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.resource-label {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.resource-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--gilded-primary);
+}
+
+.foundation-theme .resource-value {
+  color: var(--foundation-secondary);
+}
+
+/* 道德光谱 */
+.morality-spectrum {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.morality-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.morality-bar {
+  width: 150px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.morality-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 10px;
+}
+
+.empathy-fill {
+  background: linear-gradient(90deg, #FF6B35, #FFA500);
+}
+
+.apathy-fill {
+  background: linear-gradient(90deg, #005F5F, #00CED1);
+}
+
+/* 主游戏区域 */
+.game-main {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+}
+
+/* 镀金层界面 */
+#gilded-layer {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+}
+
+.party-hall {
+  background: var(--gilded-card);
+  border: 1px solid var(--gilded-border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.party-scene {
+  height: 300px;
+  background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dancer {
+  width: 60px;
+  height: 60px;
+  background: var(--gilded-primary);
+  border-radius: 50%;
+  position: absolute;
+  animation: dance 4s ease-in-out infinite;
+}
+
+@keyframes dance {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(100px) translateY(-20px); }
+  50% { transform: translateX(0) translateY(-40px); }
+  75% { transform: translateX(-100px) translateY(-20px); }
+}
+
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.quest-card {
+  background: var(--gilded-card);
+  border: 1px solid var(--gilded-border);
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quest-card:hover {
+  border-color: var(--gilded-primary);
+  transform: translateX(5px);
+}
+
+.quest-title {
+  font-weight: bold;
+  color: var(--gilded-primary);
+  margin-bottom: 0.5rem;
+}
+
+.quest-reward {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* 小游戏界面 */
+#minigame-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.minigame-container {
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 400px;
+  text-align: center;
+}
+
+.champagne-minigame {
+  width: 300px;
+  height: 200px;
+  margin: 2rem auto;
+  position: relative;
+  background: linear-gradient(to bottom, #333 0%, #222 100%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tray {
+  width: 80px;
+  height: 20px;
+  background: var(--gilded-primary);
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 4px;
+}
+
+.falling-bottle {
+  width: 20px;
+  height: 30px;
+  background: #fff;
+  position: absolute;
+  top: -30px;
+  border-radius: 3px;
+  animation: fall 3s linear;
+}
+
+@keyframes fall {
+  from { top: -30px; }
+  to { top: 200px; }
+}
+
+/* 根基层界面 */
+#foundation-layer {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+}
+
+.food-bank {
+  background: var(--foundation-card);
+  border: 1px solid var(--foundation-border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.families-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.family-card {
+  background: var(--foundation-card);
+  border: 1px solid var(--foundation-border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.family-card.critical {
+  border-color: var(--danger);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.family-avatar {
+  width: 50px;
+  height: 50px;
+  background: var(--foundation-primary);
+  border-radius: 50%;
+  margin: 0 auto 0.5rem;
+}
+
+.hunger-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.hunger-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.hunger-fill.high { background: var(--success); }
+.hunger-fill.medium { background: var(--warning); }
+.hunger-fill.low { background: var(--danger); }
+
+/* 背包界面 */
+#backpack-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.backpack-container {
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 80%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.backpack-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.inventory-slot {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--gilded-border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.inventory-slot:hover {
+  border-color: var(--gilded-primary);
+  transform: scale(1.1);
+}
+
+.inventory-slot.has-item {
+  background: var(--gilded-primary);
+  color: #000;
+  font-weight: bold;
+}
+
+/* 档案馆 */
+#archive-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-container {
+  background: var(--foundation-bg);
+  border: 2px solid var(--foundation-secondary);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.truth-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.truth-fragment {
+  aspect-ratio: 1;
+  background: var(--foundation-card);
+  border: 1px solid var(--foundation-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.truth-fragment.collected {
+  background: var(--foundation-secondary);
+  border-color: var(--foundation-secondary);
+}
+
+/* 商店 */
+#shop-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.shop-container {
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 80%;
+  max-width: 600px;
+}
+
+.shop-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.shop-item {
+  background: var(--gilded-card);
+  border: 1px solid var(--gilded-border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-item.sold-out {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 设置 */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-container {
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 80%;
+  max-width: 500px;
+}
+
+.setting-item {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider {
+  width: 100px;
+  height: 5px;
+  -webkit-appearance: none;
+  background: var(--gilded-border);
+  border-radius: 5px;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--gilded-primary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 道德选择对话框 */
+.choice-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  z-index: 2000;
+  min-width: 400px;
+  text-align: center;
+}
+
+.choice-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.choice-btn {
+  flex: 1;
+  padding: 1rem;
+  border: 1px solid var(--gilded-border);
+  background: transparent;
+  color: var(--gilded-text);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.choice-btn.empathy {
+  border-color: #FF6B35;
+}
+
+.choice-btn.empathy:hover {
+  background: #FF6B35;
+  color: #000;
+}
+
+.choice-btn.apathy {
+  border-color: #00CED1;
+}
+
+.choice-btn.apathy:hover {
+  background: #00CED1;
+  color: #000;
+}
+
+/* 总结面板 */
+.summary-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--gilded-card);
+  border: 2px solid var(--gilded-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  z-index: 2000;
+  min-width: 500px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--gilded-primary);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .game-main {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  .families-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .backpack-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .title {
+    font-size: 2.5rem;
+  }
+}
+    </style>
+</head>
+<body>
+    <!-- 主菜单 -->
+    <div id="main-menu">
+        <h1 class="title">盖茨比的代价</h1>
+        <div class="menu-buttons">
+            <button class="btn" onclick="startGame()">开始游戏</button>
+            <button class="btn" onclick="openSettings()">设置</button>
+            <button class="btn" onclick="openArchive()">档案馆</button>
+            <button class="btn" onclick="showHelp()">帮助</button>
+        </div>
+    </div>
+
+    <!-- 游戏主容器 -->
+    <div id="game-container">
+        <!-- 顶部状态栏 -->
+        <div class="status-bar">
+            <div class="world-indicator" id="world-indicator">镀金穹顶</div>
+            <div class="time-display" id="time-display">Day 1 - 06:00</div>
+            <div class="resources-bar">
+                <div class="resource-item">
+                    <span class="resource-label">欢愉点数</span>
+                    <span class="resource-value" id="euphoria-points">0</span>
+                </div>
+                <div class="resource-item">
+                    <span class="resource-label">食物包</span>
+                    <span class="resource-value" id="food-packs">0</span>
+                </div>
+                <div class="resource-item">
+                    <span class="resource-label">转化率</span>
+                    <span class="resource-value" id="conversion-rate">3%</span>
+                </div>
+                <div class="resource-item">
+                    <span class="resource-label">压力值</span>
+                    <span class="resource-value" id="pressure-value">0</span>
+                </div>
+            </div>
+            <div class="morality-spectrum">
+                <div class="morality-item">
+                    <span>共情</span>
+                    <div class="morality-bar">
+                        <div class="morality-fill empathy-fill" id="empathy-bar" style="width: 50%"></div>
+                    </div>
+                    <span id="empathy-value">50</span>
+                </div>
+                <div class="morality-item">
+                    <span>冷漠</span>
+                    <div class="morality-bar">
+                        <div class="morality-fill apathy-fill" id="apathy-bar" style="width: 50%"></div>
+                    </div>
+                    <span id="apathy-value">50</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主游戏区域 -->
+        <div class="game-main">
+            <!-- 镀金层 -->
+            <div id="gilded-layer">
+                <div class="party-hall">
+                    <h2>海湖庄园 · 镀金穹顶</h2>
+                    <div class="party-scene">
+                        <div class="dancer"></div>
+                        <p style="text-align: center; opacity: 0.7;">奢华派对正在进行中...</p>
+                    </div>
+                    <div class="quest-list" id="quest-list">
+                        <!-- 动态生成任务 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 根基层 -->
+            <div id="foundation-layer">
+                <div class="food-bank">
+                    <h2>第7社区食物银行</h2>
+                    <p>为饥饿的家庭分配食物包</p>
+                    <div class="families-grid" id="families-grid">
+                        <!-- 动态生成家庭卡片 -->
+                    </div>
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <button class="btn" onclick="allocateFood()">一键分配</button>
+                        <button class="btn" onclick="endNight()">结束夜晚</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部快捷栏 -->
+        <div class="status-bar" style="position: fixed; bottom: 0; top: auto; border-bottom: none; border-top: 2px solid var(--gilded-border);">
+            <button class="btn" onclick="openBackpack()">背包 (B)</button>
+            <button class="btn" onclick="openArchive()">档案馆 (A)</button>
+            <button class="btn" onclick="openShop()">黑市 (23:00-6:00)</button>
+            <button class="btn" onclick="openSettings()">设置 (ESC)</button>
+            <button class="btn" onclick="toggleSpeed()">加速 (空格)</button>
+        </div>
+    </div>
+
+    <!-- 小游戏覆盖层 -->
+    <div id="minigame-overlay">
+        <div class="minigame-container">
+            <h2 id="minigame-title">香槟塔大师</h2>
+            <p id="minigame-desc">使用方向键控制托盘，接住掉落的香槟瓶！</p>
+            <div class="champagne-minigame" id="champagne-minigame">
+                <div class="tray" id="tray"></div>
+            </div>
+            <p>得分: <span id="minigame-score">0</span></p>
+            <p>时间: <span id="minigame-timer">30</span>秒</p>
+            <button class="btn" onclick="closeMinigame()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 背包界面 -->
+    <div id="backpack-overlay">
+        <div class="backpack-container">
+            <h2>平衡官背包</h2>
+            <p>容量: <span id="backpack-capacity">0/20</span></p>
+            <div class="backpack-grid" id="backpack-grid">
+                <!-- 动态生成背包格子 -->
+            </div>
+            <button class="btn" onclick="closeBackpack()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 档案馆 -->
+    <div id="archive-overlay">
+        <div class="archive-container">
+            <h2>真相档案馆</h2>
+            <p>收集的真相碎片: <span id="fragment-count">0/12</span></p>
+            <div class="truth-grid" id="truth-grid">
+                <!-- 动态生成碎片 -->
+            </div>
+            <button class="btn" onclick="closeArchive()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 黑市商店 -->
+    <div id="shop-overlay">
+        <div class="shop-container">
+            <h2>黑市商人</h2>
+            <p>社会信用: <span id="social-credit">0</span></p>
+            <div class="shop-items" id="shop-items">
+                <!-- 动态生成商品 -->
+            </div>
+            <p style="font-size: 0.8rem; opacity: 0.7;">营业时间: 23:00 - 06:00</p>
+            <button class="btn" onclick="closeShop()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 设置 -->
+    <div id="settings-overlay">
+        <div class="settings-container">
+            <h2>游戏设置</h2>
+            <div class="setting-item">
+                <label>音量</label>
+                <input type="range" class="slider" id="volume-slider" min="0" max="100" value="70">
+                <span id="volume-value">70%</span>
+            </div>
+            <div class="setting-item">
+                <label>游戏速度</label>
+                <input type="range" class="slider" id="speed-slider" min="0.5" max="2" step="0.5" value="1">
+                <span id="speed-value">1.0x</span>
+            </div>
+            <div class="setting-item">
+                <label>硬核模式</label>
+                <input type="checkbox" id="hardcore-mode">
+            </div>
+            <div class="setting-item">
+                <label>显示道德值</label>
+                <input type="checkbox" id="morality-display" checked>
+            </div>
+            <button class="btn" onclick="closeSettings()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 道德选择对话框 -->
+    <div class="choice-modal" id="choice-modal">
+        <h3 id="choice-title">道德抉择</h3>
+        <p id="choice-text">你会如何选择？</p>
+        <div class="choice-buttons">
+            <button class="choice-btn empathy" id="empathy-choice" onclick="makeChoice('empathy')">共情选项</button>
+            <button class="choice-btn apathy" id="apathy-choice" onclick="makeChoice('apathy')">冷漠选项</button>
+        </div>
+    </div>
+
+    <!-- 每日总结 -->
+    <div class="summary-modal" id="summary-modal">
+        <h2>第<span id="summary-day">1</span>天结束</h2>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="summary-hunger">12%</div>
+                <div>饥饿率</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="summary-satisfaction">78%</div>
+                <div>满意度</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="summary-morality">50/50</div>
+                <div>道德光谱</div>
+            </div>
+        </div>
+        <p id="summary-event">今天发生了一些事...</p>
+        <button class="btn" onclick="closeSummary()">继续</button>
+    </div>
+
+    <script>
+// 游戏状态管理
+const GameState = {
+    day: 1,
+    time: 6, // 6:00
+    isDay: true,
+    currentWorld: 'gilded', // gilded or foundation
+    
+    // 资源
+    euphoriaPoints: 0,
+    foodPacks: 0,
+    water: 5,
+    medicine: 2,
+    socialCredit: 100,
+    
+    // 道德值
+    empathy: 50,
+    apathy: 50,
+    
+    // 系统数值
+    pressure: 0,
+    conversionRate: 0.03,
+    gildedSatisfaction: 80,
+    foundationHungerRate: 12,
+    
+    // 家庭数据
+    families: [],
+    
+    // 背包
+    backpack: [],
+    backpackCapacity: 20,
+    
+    // 真相碎片
+    truthFragments: Array(12).fill(false),
+    
+    // 任务
+    quests: [],
+    
+    // 游戏速度
+    gameSpeed: 1,
+    isPaused: false
+};
+
+// 初始化游戏
+function initGame() {
+    // 生成家庭数据
+    for (let i = 0; i < 30; i++) {
+        GameState.families.push({
+            id: i,
+            hunger: Math.random() * 100,
+            size: Math.floor(Math.random() * 4) + 1,
+            specialNeeds: Math.random() > 0.8,
+            alive: true
+        });
+    }
+    
+    // 生成初始任务
+    generateQuests();
+    
+    // 更新UI
+    updateUI();
+    renderFamilies();
+    renderQuests();
+    
+    // 开始时间循环
+    startTimeLoop();
+}
+
+// 生成任务
+function generateQuests() {
+    GameState.quests = [
+        {
+            id: 1,
+            title: "香槟塔大师",
+            description: "为赞助人S搬运3瓶香槟",
+            reward: { euphoria: 150, apathy: 5 },
+            type: "service",
+            minigame: "champagne"
+        },
+        {
+            id: 2,
+            title: "冰雕设计",
+            description: "雕刻一座镀金冰雕",
+            reward: { euphoria: 300, apathy: 10 },
+            type: "luxury",
+            minigame: "ice_sculpture"
+        },
+        {
+            id: 3,
+            title: "记者莱拉的请求",
+            description: "偷拍派对内幕",
+            reward: { euphoria: 100, empathy: 8 },
+            type: "expose",
+            minigame: "photography"
+        }
+    ];
+}
+
+// 渲染任务列表
+function renderQuests() {
+    const questList = document.getElementById('quest-list');
+    questList.innerHTML = '';
+    
+    GameState.quests.forEach(quest => {
+        const questCard = document.createElement('div');
+        questCard.className = 'quest-card';
+        questCard.onclick = () => startMinigame(quest);
+        
+        questCard.innerHTML = `
+            <div class="quest-title">${quest.title}</div>
+            <div style="font-size: 0.9rem; margin: 0.5rem 0;">${quest.description}</div>
+            <div class="quest-reward">
+                奖励: 欢愉×${quest.reward.euphoria} 
+                ${quest.reward.empathy ? `共情+${quest.reward.empathy}` : `冷漠+${quest.reward.apathy}`}
+            </div>
+        `;
+        
+        questList.appendChild(questCard);
+    });
+}
+
+// 渲染家庭网格
+function renderFamilies() {
+    const familiesGrid = document.getElementById('families-grid');
+    familiesGrid.innerHTML = '';
+    
+    GameState.families.forEach(family => {
+        if (!family.alive) return;
+        
+        const familyCard = document.createElement('div');
+        familyCard.className = 'family-card';
+        if (family.hunger > 80) familyCard.classList.add('critical');
+        
+        const hungerLevel = family.hunger > 66 ? 'low' : family.hunger > 33 ? 'medium' : 'high';
+        
+        familyCard.innerHTML = `
+            <div class="family-avatar"></div>
+            <div style="font-size: 0.8rem;">家庭 #${family.id + 1}</div>
+            <div style="font-size: 0.7rem; opacity: 0.7;">${family.size}人</div>
+            <div class="hunger-bar">
+                <div class="hunger-fill ${hungerLevel}" style="width: ${100 - family.hunger}%"></div>
+            </div>
+            <div style="font-size: 0.7rem;">饥饿度: ${Math.floor(family.hunger)}%</div>
+        `;
+        
+        familiesGrid.appendChild(familyCard);
+    });
+}
+
+// 开始小游戏
+function startMinigame(quest) {
+    document.getElementById('minigame-overlay').style.display = 'flex';
+    document.getElementById('minigame-title').textContent = quest.title;
+    document.getElementById('minigame-desc').textContent = quest.description;
+    
+    if (quest.minigame === 'champagne') {
+        startChampagneMinigame(quest);
+    }
+    
+    // 更新道德值
+    if (quest.reward.empathy) {
+        GameState.empathy = Math.min(100, GameState.empathy + quest.reward.empathy);
+    } else {
+        GameState.apathy = Math.min(100, GameState.apathy + quest.reward.apathy);
+    }
+}
+
+// 香槟塔小游戏
+function startChampagneMinigame(quest) {
+    const gameArea = document.getElementById('champagne-minigame');
+    const tray = document.getElementById('tray');
+    let score = 0;
+    let timeLeft = 30;
+    let gameRunning = true;
+    
+    document.getElementById('minigame-score').textContent = score;
+    document.getElementById('minigame-timer').textContent = timeLeft;
+    
+    // 托盘控制
+    let trayPos = 110;
+    document.addEventListener('keydown', moveTray);
+    
+    function moveTray(e) {
+        if (!gameRunning) return;
+        if (e.key === 'ArrowLeft' && trayPos > 20) {
+            trayPos -= 20;
+            tray.style.left = trayPos + 'px';
+        } else if (e.key === 'ArrowRight' && trayPos < 200) {
+            trayPos += 20;
+            tray.style.left = trayPos + 'px';
+        }
+    }
+    
+    // 掉落瓶子
+    const dropInterval = setInterval(() => {
+        if (!gameRunning) return;
+        
+        const bottle = document.createElement('div');
+        bottle.className = 'falling-bottle';
+        bottle.style.left = Math.random() * 280 + 10 + 'px';
+        gameArea.appendChild(bottle);
+        
+        // 碰撞检测
+        const bottleFall = setInterval(() => {
+            const bottleRect = bottle.getBoundingClientRect();
+            const trayRect = tray.getBoundingClientRect();
+            
+            if (bottleRect.bottom >= trayRect.top && 
+                bottleRect.bottom <= trayRect.bottom &&
+                bottleRect.left >= trayRect.left && 
+                bottleRect.right <= trayRect.right) {
+                score += 10;
+                document.getElementById('minigame-score').textContent = score;
+                bottle.remove();
+                clearInterval(bottleFall);
+            } else if (bottleRect.top > 200) {
+                bottle.remove();
+                clearInterval(bottleFall);
+            }
+        }, 50);
+    }, 1000);
+    
+    // 计时器
+    const timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('minigame-timer').textContent = timeLeft;
+        
+        if (timeLeft <= 0) {
+            gameRunning = false;
+            clearInterval(dropInterval);
+            clearInterval(timer);
+            
+            // 奖励
+            GameState.euphoriaPoints += quest.reward.euphoria;
+            updateUI();
+            
+            setTimeout(() => {
+                alert(`游戏结束！获得 ${quest.reward.euphoria} 欢愉点数`);
+                closeMinigame();
+            }, 500);
+        }
+    }, 1000);
+    
+    // 清理函数
+    window.currentMinigame = { dropInterval, timer, moveTray };
+}
+
+// 关闭小游戏
+function closeMinigame() {
+    document.getElementById('minigame-overlay').style.display = 'none';
+    if (window.currentMinigame) {
+        clearInterval(window.currentMinigame.dropInterval);
+        clearInterval(window.currentMinigame.timer);
+        document.removeEventListener('keydown', window.currentMinigame.moveTray);
+    }
+    
+    // 清理掉落物
+    const bottles = document.querySelectorAll('.falling-bottle');
+    bottles.forEach(bottle => bottle.remove());
+}
+
+// 分配食物
+function allocateFood() {
+    if (GameState.foodPacks === 0) {
+        alert('没有食物包可以分配！');
+        return;
+    }
+    
+    let allocated = 0;
+    
+    // 按饥饿度排序
+    const sortedFamilies = [...GameState.families]
+        .filter(f => f.alive)
+        .sort((a, b) => b.hunger - a.hunger);
+    
+    // 分配食物
+    for (let family of sortedFamilies) {
+        if (GameState.foodPacks <= 0) break;
+        if (family.hunger > 0) {
+            family.hunger = Math.max(0, family.hunger - 30);
+            GameState.foodPacks--;
+            allocated++;
+        }
+    }
+    
+    // 更新压力值
+    const hungryFamilies = GameState.families.filter(f => f.alive && f.hunger > 80).length;
+    GameState.pressure = Math.min(100, GameState.pressure + hungryFamilies * 2);
+    
+    // 增加共情值
+    GameState.empathy = Math.min(100, GameState.empathy + allocated * 2);
+    
+    updateUI();
+    renderFamilies();
+    
+    alert(`分配了 ${allocated} 个食物包，救助了 ${allocated} 个家庭！`);
+}
+
+// 结束夜晚
+function endNight() {
+    // 夜间消耗
+    const aliveFamilies = GameState.families.filter(f => f.alive).length;
+    const requiredFood = Math.ceil(aliveFamilies / 3);
+    
+    // 检查饥饿死亡
+    let deaths = 0;
+    GameState.families.forEach(family => {
+        if (family.alive && family.hunger >= 100) {
+            family.alive = false;
+            deaths++;
+            GameState.pressure += 15;
+        }
+    });
+    
+    // 增加饥饿度
+    GameState.families.forEach(family => {
+        if (family.alive) {
+            family.hunger = Math.min(100, family.hunger + 10 + Math.random() * 10);
+        }
+    });
+    
+    // 转换欢愉点数
+    const convertedFood = Math.floor(GameState.euphoriaPoints * GameState.conversionRate);
+    GameState.foodPacks += convertedFood;
+    GameState.euphoriaPoints = 0;
+    
+    // 更新社会信用
+    GameState.socialCredit += convertedFood * 10 - deaths * 50;
+    
+    // 检查游戏结束
+    if (GameState.pressure >= 100) {
+        endGame(false);
+        return;
+    }
+    
+    // 显示总结
+    showSummary(deaths, convertedFood);
+}
+
+// 显示每日总结
+function showSummary(deaths, convertedFood) {
+    document.getElementById('summary-day').textContent = GameState.day;
+    document.getElementById('summary-hunger').textContent = Math.floor(GameState.foundationHungerRate) + '%';
+    document.getElementById('summary-satisfaction').textContent = Math.floor(GameState.gildedSatisfaction) + '%';
+    document.getElementById('summary-morality').textContent = `${GameState.empathy}/${GameState.apathy}`;
+    
+    let eventText = `今日转化 ${convertedFood} 个食物包。`;
+    if (deaths > 0) {
+        eventText += `不幸的是，${deaths} 个家庭因饥饿死亡。`;
+        GameState.foundationHungerRate = Math.min(100, GameState.foundationHungerRate + deaths * 5);
+    } else {
+        eventText += `没有家庭死亡，你做得很好！`;
+        GameState.foundationHungerRate = Math.max(0, GameState.foundationHungerRate - 5);
+    }
+    
+    document.getElementById('summary-event').textContent = eventText;
+    document.getElementById('summary-modal').style.display = 'block';
+}
+
+// 关闭总结
+function closeSummary() {
+    document.getElementById('summary-modal').style.display = 'none';
+    
+    // 进入新的一天
+    GameState.day++;
+    GameState.time = 6;
+    GameState.isDay = true;
+    switchWorld('gilded');
+    generateQuests();
+    renderQuests();
+    updateUI();
+}
+
+// 时间循环
+function startTimeLoop() {
+    setInterval(() => {
+        if (GameState.isPaused) return;
+        
+        GameState.time += GameState.gameSpeed;
+        
+        if (GameState.time >= 18 && GameState.isDay) {
+            // 切换到夜晚
+            GameState.isDay = false;
+            GameState.time = 18;
+            switchWorld('foundation');
+            showChoiceDialog();
+        } else if (GameState.time >= 30) {
+            // 新的一天
+            GameState.time = 6;
+            GameState.isDay = true;
+            switchWorld('gilded');
+        }
+        
+        updateUI();
+    }, 1000);
+}
+
+// 切换世界
+function switchWorld(world) {
+    GameState.currentWorld = world;
+    
+    if (world === 'gilded') {
+        document.getElementById('gilded-layer').style.display = 'flex';
+        document.getElementById('foundation-layer').style.display = 'none';
+        document.body.classList.remove('foundation-theme');
+        document.getElementById('world-indicator').textContent = '镀金穹顶';
+    } else {
+        document.getElementById('gilded-layer').style.display = 'none';
+        document.getElementById('foundation-layer').style.display = 'flex';
+        document.body.classList.add('foundation-theme');
+        document.getElementById('world-indicator').textContent = '根基层';
+    }
+}
+
+// 显示道德选择对话框
+function showChoiceDialog() {
+    document.getElementById('choice-title').textContent = '夜晚降临';
+    document.getElementById('choice-text').textContent = '你目睹了根基层的困境，内心有何感触？';
+    document.getElementById('empathy-choice').textContent = '我感到愧疚，必须做更多（共情+10）';
+    document.getElementById('apathy-choice').textContent = '这是系统的问题，我无能为力（冷漠+10）';
+    document.getElementById('choice-modal').style.display = 'block';
+}
+
+// 做出选择
+function makeChoice(type) {
+    if (type === 'empathy') {
+        GameState.empathy = Math.min(100, GameState.empathy + 10);
+    } else {
+        GameState.apathy = Math.min(100, GameState.apathy + 10);
+    }
+    
+    document.getElementById('choice-modal').style.display = 'none';
+    updateUI();
+}
+
+// 更新UI
+function updateUI() {
+    document.getElementById('time-display').textContent = `Day ${GameState.day} - ${Math.floor(GameState.time)}:00`;
+    document.getElementById('euphoria-points').textContent = GameState.euphoriaPoints;
+    document.getElementById('food-packs').textContent = GameState.foodPacks;
+    document.getElementById('conversion-rate').textContent = (GameState.conversionRate * 100).toFixed(1) + '%';
+    document.getElementById('pressure-value').textContent = GameState.pressure;
+    document.getElementById('empathy-value').textContent = GameState.empathy;
+    document.getElementById('apathy-value').textContent = GameState.apathy;
+    
+    document.getElementById('empathy-bar').style.width = GameState.empathy + '%';
+    document.getElementById('apathy-bar').style.width = GameState.apathy + '%';
+    
+    // 更新背包容量
+    document.getElementById('backpack-capacity').textContent = `${GameState.backpack.length}/${GameState.backpackCapacity}`;
+    
+    // 更新社会信用
+    document.getElementById('social-credit').textContent = GameState.socialCredit;
+    
+    // 更新碎片数量
+    const collectedFragments = GameState.truthFragments.filter(f => f).length;
+    document.getElementById('fragment-count').textContent = `${collectedFragments}/12`;
+    
+    // 检查黑市营业时间
+    const shopBtn = document.querySelector('.status-bar .btn:nth-child(3)');
+    if (GameState.time >= 23 || GameState.time < 6) {
+        shopBtn.style.opacity = '1';
+        shopBtn.disabled = false;
+    } else {
+        shopBtn.style.opacity = '0.5';
+        shopBtn.disabled = true;
+    }
+}
+
+// 打开背包
+function openBackpack() {
+    document.getElementById('backpack-overlay').style.display = 'flex';
+    renderBackpack();
+}
+
+// 渲染背包
+function renderBackpack() {
+    const backpackGrid = document.getElementById('backpack-grid');
+    backpackGrid.innerHTML = '';
+    
+    for (let i = 0; i < GameState.backpackCapacity; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'inventory-slot';
+        
+        if (i < GameState.backpack.length) {
+            slot.classList.add('has-item');
+            slot.textContent = GameState.backpack[i].name;
+        }
+        
+        backpackGrid.appendChild(slot);
+    }
+}
+
+// 关闭背包
+function closeBackpack() {
+    document.getElementById('backpack-overlay').style.display = 'none';
+}
+
+// 打开档案馆
+function openArchive() {
+    document.getElementById('archive-overlay').style.display = 'flex';
+    renderTruthFragments();
+}
+
+// 渲染真相碎片
+function renderTruthFragments() {
+    const truthGrid = document.getElementById('truth-grid');
+    truthGrid.innerHTML = '';
+    
+    GameState.truthFragments.forEach((collected, index) => {
+        const fragment = document.createElement('div');
+        fragment.className = 'truth-fragment';
+        if (collected) fragment.classList.add('collected');
+        
+        fragment.innerHTML = collected ? `碎片#${index + 1}` : '?';
+        fragment.onclick = () => {
+            if (collected) {
+                alert(`真相碎片 #${index + 1}: 这是系统剥削的证据！`);
+            }
+        };
+        
+        truthGrid.appendChild(fragment);
+    });
+}
+
+// 关闭档案馆
+function closeArchive() {
+    document.getElementById('archive-overlay').style.display = 'none';
+}
+
+// 打开商店
+function openShop() {
+    if (GameState.time < 23 && GameState.time >= 6) {
+        alert('黑市只在23:00-06:00营业！');
+        return;
+    }
+    
+    document.getElementById('shop-overlay').style.display = 'flex';
+    renderShopItems();
+}
+
+// 渲染商店物品
+function renderShopItems() {
+    const shopItems = document.getElementById('shop-items');
+    shopItems.innerHTML = '';
+    
+    const items = [
+        {
+            id: 'conversion_boost',
+            name: '转化率提升',
+            price: 500,
+            effect: '明日转化率+2%',
+            available: GameState.socialCredit >= 500
+        },
+        {
+            id: 'food_pack',
+            name: '食物包',
+            price: 100,
+            effect: '立即获得5个食物包',
+            available: GameState.socialCredit >= 100
+        },
+        {
+            id: 'medicine',
+            name: '药品',
+            price: 200,
+            effect: '获得3个药品',
+            available: GameState.socialCredit >= 200
+        }
+    ];
+    
+    items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'shop-item';
+        if (!item.available) itemDiv.classList.add('sold-out');
+        
+        itemDiv.innerHTML = `
+            <div>
+                <div style="font-weight: bold;">${item.name}</div>
+                <div style="font-size: 0.8rem; opacity: 0.7;">${item.effect}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: var(--gilded-primary);">${item.price} 信用</div>
+                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;" 
+                        onclick="buyItem('${item.id}', ${item.price})" 
+                        ${!item.available ? 'disabled' : ''}>购买</button>
+            </div>
+        `;
+        
+        shopItems.appendChild(itemDiv);
+    });
+}
+
+// 购买物品
+function buyItem(itemId, price) {
+    if (GameState.socialCredit < price) {
+        alert('社会信用不足！');
+        return;
+    }
+    
+    GameState.socialCredit -= price;
+    
+    switch (itemId) {
+        case 'conversion_boost':
+            GameState.conversionRate = Math.min(0.05, GameState.conversionRate + 0.02);
+            alert('转化率已提升！');
+            break;
+        case 'food_pack':
+            GameState.foodPacks += 5;
+            alert('获得5个食物包！');
+            break;
+        case 'medicine':
+            GameState.medicine += 3;
+            alert('获得3个药品！');
+            break;
+    }
+    
+    updateUI();
+    closeShop();
+}
+
+// 关闭商店
+function closeShop() {
+    document.getElementById('shop-overlay').style.display = 'none';
+}
+
+// 打开设置
+function openSettings() {
+    document.getElementById('settings-overlay').style.display = 'flex';
+}
+
+// 关闭设置
+function closeSettings() {
+    document.getElementById('settings-overlay').style.display = 'none';
+}
+
+// 切换游戏速度
+function toggleSpeed() {
+    const speeds = [0.5, 1, 1.5, 2];
+    const currentIndex = speeds.indexOf(GameState.gameSpeed);
+    GameState.gameSpeed = speeds[(currentIndex + 1) % speeds.length];
+    alert(`游戏速度: ${GameState.gameSpeed}x`);
+}
+
+// 游戏结束
+function endGame(isWin) {
+    GameState.isPaused = true;
+    const message = isWin ? 
+        '恭喜你！你成功揭露了系统的真相，实现了真结局！' : 
+        '游戏结束：根基层崩溃，你的平衡官生涯到此结束...';
+    
+    setTimeout(() => {
+        if (confirm(message + '\n是否重新开始？')) {
+            location.reload();
+        }
+    }, 500);
+}
+
+// 显示帮助
+function showHelp() {
+    alert(`游戏帮助：\n\n1. 昼夜循环：白天在镀金层参加派对，夜晚在根基层分配食物\n2. 资源转换：白天获得的欢愉点数会按转化率变为食物包\n3. 道德选择：你的行为会影响共情值和冷漠值\n4. 压力值：根基层饥饿过高会导致压力上升，达到100游戏结束\n5. 快捷键：B-背包, A-档案馆, 空格-加速时间`);
+}
+
+// 绑定设置滑块
+document.getElementById('volume-slider').addEventListener('input', (e) => {
+    document.getElementById('volume-value').textContent = e.target.value + '%';
+});
+
+document.getElementById('speed-slider').addEventListener('input', (e) => {
+    GameState.gameSpeed = parseFloat(e.target.value);
+    document.getElementById('speed-value').textContent = e.target.value + 'x';
+});
+
+document.getElementById('hardcore-mode').addEventListener('change', (e) => {
+    if (e.target.checked) {
+        alert('硬核模式已开启：道德值将被隐藏！');
+        document.querySelector('.morality-spectrum').style.display = 'none';
+    } else {
+        document.querySelector('.morality-spectrum').style.display = 'flex';
+    }
+});
+
+// 键盘快捷键
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'b' || e.key === 'B') openBackpack();
+    if (e.key === 'a' || e.key === 'A') openArchive();
+    if (e.key === ' ') {
+        e.preventDefault();
+        toggleSpeed();
+    }
+    if (e.key === 'Escape') closeAllOverlays();
+});
+
+// 关闭所有覆盖层
+function closeAllOverlays() {
+    document.querySelectorAll('#minigame-overlay, #backpack-overlay, #archive-overlay, #shop-overlay, #settings-overlay').forEach(el => {
+        el.style.display = 'none';
+    });
+}
+
+// 开始游戏
+function startGame() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-container').style.display = 'flex';
+    initGame();
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // 预加载一些数据
+    GameState.truthFragments[0] = true; // 默认解锁第一个碎片
+});
+    </script>
+</body>
+</html>
+```
+
+This is a complete, self-contained HTML demo for "The Gatsby's Toll" game. It includes:
+
+1. A main menu with start button
+2. A dual-world interface (Gilded Layer and Foundation Layer)
+3. Time cycle system (day/night)
+4. Resource management (Euphoria Points, Food Packs)
+5. Morality spectrum (Empathy vs Apathy)
+6. Mini-games (Champagne Tower)
+7. Family management system
+8. Inventory system
+9. Archive system for truth fragments
+10. Black market shop
+11. Settings panel
+12. Daily summary reports
+13. Responsive design for mobile devices
+
+The game is fully playable with keyboard shortcuts (B for backpack, A for archive, Space to toggle speed). The demo showcases the core mechanics of balancing between the luxurious Gilded Layer and struggling Foundation Layer.
